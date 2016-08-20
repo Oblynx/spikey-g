@@ -1,9 +1,15 @@
+% Load a data file
+clear; close all;
+d= dir('data/PTES_2/matfilesT1/ptes02*.mat');
+load(['data/PTES_2/matfilesT1/',d.name]); clear('d');
+eegdata_bul= bul_Averageptes02; eegdata_nbul= nobul_Averageptes02;
+eegdata_select= eegdata_bul;
 %% windowStatistics
 fs= 250; t_w=0.1; % window length in sec
 L= round(t_w*fs);  % window length in samples
 
-[C,N]= size(bul_Averageptes07);
-x= [zeros(C,L-1), bul_Averageptes07-mean(bul_Averageptes07,2)*ones(1,N)]; % zero-pad the signals
+[C,N]= size(eegdata_select);
+x= [zeros(C,L-1), eegdata_select-mean(eegdata_select,2)*ones(1,N)]; % zero-pad the signals
 time= linspace(0, N/fs, N);
 
 orders= 4;
