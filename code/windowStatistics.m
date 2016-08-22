@@ -7,8 +7,8 @@ eegdata_bul= bul_Averageptes07; eegdata_nbul= nobul_Averageptes07;
 eegdata_select= eegdata_bul;
 
 % Parameters + padding, upsampling
-upsampling= 3;    % upsampling: Upsample to this many times the original fs
-fs= 250*upsampling; t_w=0.05;  % t_w: window length in sec
+upsampling= 8;    % upsampling: Upsample to this many times the original fs
+fs= 250*upsampling; t_w=0.02;  % t_w: window length in sec
 orders= 5;         % orders: max statistics order (<=8)
 
 L= round(t_w*fs);  % L: window length in samples
@@ -33,6 +33,7 @@ for i=1:N
 end
 %}
 %
+
 % Use the general moment calculations (generalizes to higher orders)
 for i=1:N
   w= x(:,i:i+L-1);
@@ -55,6 +56,7 @@ subplot(222); plot(time, stat(:,:,2)); title('var'); xlabel('t (s)');
 subplot(223); plot(time, stat(:,:,3)); title('skew'); xlabel('t (s)');
 subplot(224); plot(time, stat(:,:,4)); title('kurt'); xlabel('t (s)');
 
+%{
 % Average from all channels
 meanChannelStat= squeeze(mean(stat,1)); 
 figure(2);
@@ -62,7 +64,7 @@ subplot(221); plot(time, mean(x(:,L:end),1)); title('sig'); xlabel('t (s)');
 subplot(222); plot(time, meanChannelStat(:,2)); title('var'); xlabel('t (s)');
 subplot(223); plot(time, meanChannelStat(:,3)); title('skew'); xlabel('t (s)');
 subplot(224); plot(time, meanChannelStat(:,4)); title('kurt'); xlabel('t (s)');
-
+%}
 % Plot the higher orders
 if order > 4
   figure(3);
@@ -71,3 +73,4 @@ if order > 4
     xlabel('t (s)');
   end
 end
+
