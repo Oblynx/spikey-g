@@ -28,6 +28,6 @@ for i=1:channels
 end
 % Show freq range
 %figure; plot(scales,pfreq(i,:))
-fprintf('Scales\t   Freqs\n%.2f\t-> %.2f\n%.2f\t-> %.2f\nl=%d\n', ...
-        scales(1),pfreq(1),scales(end),pfreq(end),length(scales));
+%fprintf('Scales\t   Freqs\n%.2f\t-> %.2f\n%.2f\t-> %.2f\nl=%d\n', ...
+%        scales(1),pfreq(1),scales(end),pfreq(end),length(scales));
 

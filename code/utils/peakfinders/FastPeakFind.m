@@ -111,7 +111,7 @@ if any(d(:))  ; %for the case of non zero raw image
         d=conv2(single(d),filt,'same') ;
         
         % Apply again threshold (and change if needed according to SNR)
-        d=d.*(d>0.9*thres);
+        d=d.*(d>0.8*thres);
         
         switch res % switch between local maxima and sub-pixel methods
             case 1 % peak find - using the local maxima approach - 1 pixel resolution
@@ -164,8 +164,8 @@ if any(d(:))  ; %for the case of non zero raw image
                 % to see if the limit I used (mean+2 standard deviations)
                 % is an appropriate limit for your data.
                 
-                rel_peaks_vec=[stats.Area]<=mean([stats.Area])+2*std([stats.Area]);
-                cent=[stats(rel_peaks_vec).WeightedCentroid]';
+                rel_peaks_vec= [stats.Area] <= mean([stats.Area])+10*std([stats.Area]);
+                cent= [stats(rel_peaks_vec).WeightedCentroid]';
                 cent_map=[];
         end
         

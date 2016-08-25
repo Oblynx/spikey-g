@@ -8,7 +8,7 @@ freqmod= f*(0.9995+1*exp(-((time-mean(time))).^2));
 x= sin(2*pi*freqmod.*time)'*sin(2*pi*freqmod.*time); x= x-min(x(:));
 figure; imagesc(x);
 
-p= FastPeakFind(x,1.9,fspecial('gaussian', 7,5),5);
+p= FastPeakFind(x,1,fspecial('gaussian', 5,1),5,2);
 hold on;
 plot(p(1:2:length(p)), p(2:2:length(p)), 'rx');
 hold off;
