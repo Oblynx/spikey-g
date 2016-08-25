@@ -18,8 +18,10 @@ for i= 1:size(w,3)
   x= imgaussfilt(x,wsmooth);  % Smoothen image
   [~,iM]= extrema2(x);       % Find all the local maxima
   p(:,:,i)= selectPeaks(x,iM, 0.2);
-  hold on; plot(t(p(:,1,i)), size(x,1)-p(:,2,i), 'mx'); % Highlight peaks
-  hold off;
+  if ~isempty(plottype)
+    hold on; plot(t(p(:,1,i)), size(x,1)-p(:,2,i), 'mx'); % Highlight peaks
+    hold off;
+  end
   pwidth(:,i)= peakWidth(x, p(:,:,i));
   
   f(i,:)= [w(p(1,2,i),p(1,1,i)), pfreq(p(1,2,i)), pwidth(1,i), ...

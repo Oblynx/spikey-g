@@ -23,7 +23,7 @@ function [xmax,imax,xmin,imin] = extrema(x)
 %   See also EXTREMA2, MAX, MIN
 
 %   Written by
-%   Lic. on Physics Carlos Adrián Vargas Aguilera
+%   Lic. on Physics Carlos Adriï¿½n Vargas Aguilera
 %   Physical Oceanography MS candidate
 %   UNIVERSIDAD DE GUADALAJARA 
 %   Mexico, 2004
@@ -49,6 +49,7 @@ if Nt ~= length(x)
  error('Entry must be a vector.')
 end
 
+%{
 % NaN's:
 inan = find(isnan(x));
 indx = 1:Nt;
@@ -57,6 +58,8 @@ if ~isempty(inan)
  x(inan) = [];
  Nt = length(x);
 end
+%}
+inan= []; indx = 1:Nt;
 
 % Difference between subsequent elements:
 dx = diff(x);
@@ -125,11 +128,13 @@ end
 xmax = x(imax);
 xmin = x(imin);
 
+%{
 % NaN's:
 if ~isempty(inan)
  imax = indx(imax);
  imin = indx(imin);
 end
+%}
 
 % Same size as x:
 imax = reshape(imax,size(xmax));
@@ -143,4 +148,4 @@ imax = imax(inmax);
 imin = imin(inmin);
 
 
-% Carlos Adrián Vargas Aguilera. nubeobscura@hotmail.com
+% Carlos Adriï¿½n Vargas Aguilera. nubeobscura@hotmail.com
