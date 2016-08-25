@@ -2,7 +2,11 @@ function [f]= extractFeatures(eeg, fs, wsmooth, plottype)
 % eeg: [channel]x[time] Part of eeg time series from which the characteristics
 % of the 2 most prominent wavelet peaks will be extracted
 
-close all;
+% Remove reference channel
+if size(eeg,1) == 257
+  eeg= eeg(1:256,:);
+end
+
 t= (0:size(eeg,2))/fs;
 [w,pfreq]= eegcwt(eeg, fs, 8, 'morl',plottype);
 % Normalized energy for each coefficient
