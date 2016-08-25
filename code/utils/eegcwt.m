@@ -4,7 +4,7 @@ function [wcf, pfreq, scales] = eegcwt(eeg, fs, voicesPerOct, mwave, plottype)
 % fs: sampling frequency
 % voicesPerOct: defines the transform's resolution in scales
 % mwave: mother wavelet name (eg 'morl')
-% plottype: 'image' or 'contour'
+% plottype: 'image', 'contour' or [] (empty)
 
 % wcf: [scales]x[time]x[channel] Matrix of wavelet coefficients
 % pfreq: Pseudofrequencies
@@ -22,7 +22,9 @@ for i=1:channels
   x= eeg(i,:);
   wcf(:,:,i) = cwt(x,scales,mwave);
   % Plot
-  wpfreqgram(plottype, wcf(:,:,i), pfreq, t,x);
+  if ~isempty(plottype)
+    wpfreqgram(plottype, wcf(:,:,i), pfreq, t,x);
+  end
 end
 % Show freq range
 %figure; plot(scales,pfreq(i,:))
