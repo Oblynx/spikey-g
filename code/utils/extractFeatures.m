@@ -1,10 +1,10 @@
-function [f]= extractFeatures(eeg, fs, wsmooth)
+function [f]= extractFeatures(eeg, fs, wsmooth, plottype)
 % eeg: [channel]x[time] Part of eeg time series from which the characteristics
 % of the 2 most prominent wavelet peaks will be extracted
 
 close all;
 t= (0:size(eeg,2))/fs;
-[w,pfreq]= eegcwt(eeg, fs, 8, 'morl','image');
+[w,pfreq]= eegcwt(eeg, fs, 8, 'morl',plottype);
 % Normalized energy for each coefficient
 for i= 1:size(w,3)
   x= w(:,:,i);
@@ -12,7 +12,7 @@ for i= 1:size(w,3)
   w(:,:,i)= 100*x./sum(x(:));
 end
 
-f= zeros(6,size(eeg,1)); p= zeros(2,2,size(eeg,1)); pwidth= zeros(2,size(eeg,1));
+f= zeros(size(eeg,1),6); p= zeros(2,2,size(eeg,1)); pwidth= zeros(2,size(eeg,1));
 for i= 1:size(w,3)
   x= w(:,:,i);
   x= imgaussfilt(x,wsmooth);  % Smoothen image
@@ -22,7 +22,7 @@ for i= 1:size(w,3)
   hold off;
   pwidth(:,i)= peakWidth(x, p(:,:,i));
   
-  f(:,i)= [w(p(1,2,i),p(1,1,i)), pfreq(p(1,2,i)), pwidth(1,i), ...
+  f(i,:)= [w(p(1,2,i),p(1,1,i)), pfreq(p(1,2,i)), pwidth(1,i), ...
            w(p(2,2,i),p(2,1,i)), pfreq(p(2,2,i)), pwidth(2,i)];
 end
 
