@@ -7,6 +7,13 @@ if size(eeg,1) == 257
   eeg= eeg(1:256,:);
 end
 
+lastfig= get(groot,'CurrentFigure');
+if ~isempty(lastfig)
+  lastfig= lastfig.Number;
+else
+  lastfig= 0;
+end
+
 t= (0:size(eeg,2))/fs;
 [w,pfreq]= eegcwt(eeg, fs, 8, 'morl',plottype);
 % Normalized energy for each coefficient
@@ -16,28 +23,37 @@ for i= 1:size(w,3)
   w(:,:,i)= 100*x./sum(x(:));
 end
 
-f= zeros(size(eeg,1),6); p= zeros(2,2,size(eeg,1)); pwidth= zeros(2,size(eeg,1));
-for i= 1:size(w,3)
+f= zeros(size(eeg,1),6);
+px1= zeros(size(eeg,1)); px2= px1; py1= px1; py2= px1;
+parfor i= 1:size(w,3)
   x= w(:,:,i);
-  x= imgaussfilt(x,wsmooth);  % Smoothen image
-  [~,iM]= extrema2(x);       % Find all the local maxima
-  p(:,:,i)= selectPeaks(x,iM, 0.2);
-  if ~isempty(plottype)
-    hold on; plot(t(p(:,1,i)), size(x,1)-p(:,2,i), 'mx'); % Highlight peaks
+  xsm= imgaussfilt(x,wsmooth);  % Smoothen image
+  [~,iM]= extrema2(xsm);       % Find all the local maxima
+  p= selectPeaks(xsm,iM, 0.2);
+  px1(i)= p(1,1); px2(i)= p(2,1);
+  py1(i)= p(1,2); py2(i)= p(2,2);
+  pwidth= peakWidth(xsm, [px1(i),py1(i);px2(i),py2(i)]);
+  
+  f(i,:)= [x(py1(i),px1(i)), pfreq(py1(i)), pwidth(1), ...
+           x(py2(i),px2(i)), pfreq(py2(i)), pwidth(2)];
+end
+if ~isempty(plottype)
+  for i= 1:size(w,3)
+    figure(lastfig + i);
+    hold on; plot(t([px1(i),px2(i)]), size(w,1)-[py1(i),py2(i)], 'rx'); % Highlight peaks
     hold off;
   end
-  pwidth(:,i)= peakWidth(x, p(:,:,i));
-  
-  f(i,:)= [w(p(1,2,i),p(1,1,i)), pfreq(p(1,2,i)), pwidth(1,i), ...
-           w(p(2,2,i),p(2,1,i)), pfreq(p(2,2,i)), pwidth(2,i)];
+end
 end
 
 function p= selectPeaks(x, i, promThresh)
 % Select the 2 most prominent peaks (the 1st is always the total maximum)
 
+prominence= zeros(length(i),1);
 medx= median(x(:));
 [i(:,2), i(:,1)]= ind2sub(size(x), i);
 p(1,:)= i(1,:);
+p(2,:)= [0,0];
 for ii=2:length(i)
   xr= i(1,1):i(ii,1);
   if isempty(xr)
@@ -49,11 +65,17 @@ for ii=2:length(i)
   % prominence of a peak: how the depth of the valley between the 2 peaks
   % compares to the median level of the image. 0 means no valley, 1 is a valley
   % as deep as the signal median
-  prominence= (candidate-min(x(ir)))/(candidate-medx);
-  if prominence > promThresh
+  prominence(ii)= (candidate-min(x(ir)))/(candidate-medx);
+  if prominence(ii) > promThresh
     p(2,:)= i(ii,:);
     break;
   end
+end
+if p(2,:)==[0,0]
+  [~,ii]= min(abs(prominence - promThresh));
+  p(2,:)= i(ii,:);
+end
+  
 end
 
 function pw= peakWidth(x,peaks)
@@ -69,4 +91,5 @@ for p=1:size(peaks,1)
   xu= xu(1 : find(xu < 0.1*xp, 1)-1);
   xl= xl(1 : find(xl < 0.1*xp, 1)-1);
   pw(p)= std([xu;xl]);
+end
 end

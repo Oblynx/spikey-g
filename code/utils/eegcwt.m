@@ -17,13 +17,14 @@ numoctaves = 10;
 scales = 4*a0.^(voicesPerOct:1/voicesPerOct:numoctaves*voicesPerOct);
 pfreq = scal2frq(scales,mwave,1/fs);
 wcf= zeros(length(scales),length(t),channels);
-for i=1:channels
+parfor i=1:channels
   % Calc wavelets
-  x= eeg(i,:);
-  wcf(:,:,i) = cwt(x,scales,mwave);
-  % Plot
-  if ~isempty(plottype)
-    wpfreqgram(plottype, wcf(:,:,i), pfreq, t,x);
+  wcf(:,:,i) = cwt(eeg(i,:),scales,mwave);
+end
+% Plot
+if ~isempty(plottype)
+  for i=1:channels
+    wpfreqgram(plottype, wcf(:,:,i), pfreq, t,eeg(i,:));
   end
 end
 % Show freq range
