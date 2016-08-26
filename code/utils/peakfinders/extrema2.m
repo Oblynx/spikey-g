@@ -44,7 +44,7 @@ function [xymax,smax,xymin,smin] = extrema2(xy,varargin)
 %   See also EXTREMA, MAX, MIN
 
 %   Written by
-%   Lic. on Physics Carlos Adrián Vargas Aguilera
+%   Lic. on Physics Carlos Adriï¿½n Vargas Aguilera
 %   Physical Oceanography MS candidate
 %   UNIVERSIDAD DE GUADALAJARA 
 %   Mexico, 2005
@@ -154,7 +154,7 @@ for n = 1:length(iini)
   ises = M-ises+1;
  end
  s = sub2ind([M,N],ises,jses);
- [temp,imax,temp,imin] = extrema(xy(s)); clear temp
+ [~,imax,~,imin] = extrema(xy(s));
  sextmax = [sextmax; s(imax)'];
  sextmin = [sextmin; s(imin)'];
 end
@@ -171,4 +171,4 @@ i = (I - (J+i0-j0)).*si + J+i0-j0;
 j = (I+j0-i0-(J)).*si + J;
 
 
-% Carlos Adrián Vargas Aguilera. nubeobscura@hotmail.com
+% Carlos Adriï¿½n Vargas Aguilera. nubeobscura@hotmail.com

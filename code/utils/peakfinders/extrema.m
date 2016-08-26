@@ -141,11 +141,12 @@ imax = reshape(imax,size(xmax));
 imin = reshape(imin,size(xmin));
 
 % Descending order:
+%{
 [temp,inmax] = sort(-xmax); clear temp
 xmax = xmax(inmax);
 imax = imax(inmax);
 [xmin,inmin] = sort(xmin);
 imin = imin(inmin);
-
+%}
 
 % Carlos Adri�n Vargas Aguilera. nubeobscura@hotmail.com
