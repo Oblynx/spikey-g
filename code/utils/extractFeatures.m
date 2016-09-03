@@ -18,24 +18,32 @@ t= (0:size(eeg,2))/fs;
 [w,pfreq]= eegcwt(eeg, fs, 8, 'morl',plottype);
 % Normalized energy for each coefficient
 for i= 1:size(w,3)
-  x= w(:,:,i);
-  x= abs(x.*x);
-  w(:,:,i)= 100*x./sum(x(:));
+  if sum(abs(eeg(i,:))) > 1E-3
+    x= w(:,:,i);
+    x= abs(x.*x);
+    w(:,:,i)= 100*x./sum(x(:));
+  else
+    w(:,:,i)= NaN(size(w(:,:,i)));
+  end
 end
 
 f= zeros(size(eeg,1),6);
 px1= zeros(size(eeg,1)); px2= px1; py1= px1; py2= px1;
 parfor i= 1:size(w,3)
   x= w(:,:,i);
-  xsm= imgaussfilt(x,wsmooth);  % Smoothen image
-  [~,iM]= extrema2(xsm);       % Find all the local maxima
-  p= selectPeaks(xsm,iM, 0.2);
-  px1(i)= p(1,1); px2(i)= p(2,1);
-  py1(i)= p(1,2); py2(i)= p(2,2);
-  pwidth= peakWidth(xsm, [px1(i),py1(i);px2(i),py2(i)]);
-  
-  f(i,:)= [x(py1(i),px1(i)), pfreq(py1(i)), pwidth(1), ...
-           x(py2(i),px2(i)), pfreq(py2(i)), pwidth(2)];
+  if ~isnan(x(1,1))
+    xsm= imgaussfilt(x,wsmooth);  % Smoothen image
+    [~,iM]= extrema2(xsm);       % Find all the local maxima
+    p= selectPeaks(xsm,iM, 0.2);
+    px1(i)= p(1,1); px2(i)= p(2,1);
+    py1(i)= p(1,2); py2(i)= p(2,2);
+    pwidth= peakWidth(xsm, [px1(i),py1(i);px2(i),py2(i)]);
+
+    f(i,:)= [x(py1(i),px1(i)), pfreq(py1(i)), pwidth(1), ...
+             x(py2(i),px2(i)), pfreq(py2(i)), pwidth(2)];
+  else
+    f(i,:)= NaN(1,6);
+  end
 end
 if ~isempty(plottype)
   for i= 1:size(w,3)
