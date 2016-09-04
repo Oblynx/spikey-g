@@ -1,6 +1,6 @@
 %% Train SVM
 clear; close all;
-load data/results/features/svmTrainingSet_T1EPN.mat
+load data/results/features/svmTrainingSet_T1all.mat
 
 fullTset= svmTrainingSet_T1EPN(:,1:6);
 % Remove NaN values
@@ -12,14 +12,16 @@ svmClassLabels_T1EPN= svmClassLabels_T1EPN(dataToKeep);
 %{
 [~, fullTset]= pcares(zscore(fullTset), 2);
 fullTset= fullTset(:,1:2);
-svmTrainingSet_T1EPN= fullTset;
 %}
+%c= pca(fullTset);
+%fullTset= fullTset*c(1:3,:)';
 
+svmTrainingSet_T1EPN= fullTset;
 svmModel_T1EPN = fitcsvm(svmTrainingSet_T1EPN, svmClassLabels_T1EPN, 'Standardize',true, ...
                    'CrossVal', 'on', 'kfold',5);
 % Show classification error
 svmModel_T1EPN.kfoldLoss
-silhouette(fullTset, kmeans(fullTset,2,'Replicates',5))
+%silhouette(fullTset, kmeans(fullTset,2,'Replicates',5))
 
 %{
 % Try each predictor alone
@@ -33,3 +35,4 @@ for i= 1:size(selPreds,1)
   fprintf('%s= %f\n',[predNames{selPreds(i,:)}],svmModel_T1EPN.kfoldLoss);
 end
 %}
+

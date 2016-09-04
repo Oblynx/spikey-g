@@ -40,7 +40,7 @@ for i=1:numSubjects
   toc
   svmTrainingSet_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i, :)= [f,channEPN'];
   svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'bul'};  % den douleuei ayth h entolh. kalytera na enswmatosoyme 7o stoixeio, 1->bul, 0->nobul giati an kanoume random anakatema den tha xreiazetai na vriskoume pali poios einai bul kai poios oxi
-  save data/results/features/svmTrainingSet_T1EPN.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN; % save every subject completed not to lose data. that should be 5 mins of computer time lost maximum
+  save data/results/features/svmTrainingSet_T1all.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN; % save every subject completed not to lose data. that should be 5 mins of computer time lost maximum
 end
 
 datanames= who('nobul*');
@@ -50,6 +50,6 @@ for i=numSubjects+1 : 2*numSubjects
   f= extractFeatures(eegs, samplingRate, wltSmoothStd, []);
   svmTrainingSet_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i, :)= [f,channEPN'];
   svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'nobul'}; % den douleuei
-  save data/results/features/svmTrainingSet_T1EPN.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN;
+  save data/results/features/svmTrainingSet_T1all.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN;
 end
 

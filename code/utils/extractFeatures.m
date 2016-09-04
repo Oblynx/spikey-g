@@ -32,8 +32,16 @@ px1= zeros(size(eeg,1)); px2= px1; py1= px1; py2= px1;
 parfor i= 1:size(w,3)
   x= w(:,:,i);
   if ~isnan(x(1,1))
-    xsm= imgaussfilt(x,wsmooth);  % Smoothen image
-    [~,iM]= extrema2(xsm);       % Find all the local maxima
+    if wsmooth > 0
+      xsm= imgaussfilt(x,wsmooth);  % Smoothen image
+    else
+      xsm= x;
+    end
+    % Find all the local maxima
+    iM= find(imregionalmax(xsm));
+    [~,idxSorted]= sort(xsm(iM),'descend');
+    iM= iM(idxSorted);
+    % Select 2 most prominent peaks
     p= selectPeaks(xsm,iM, 0.2);
     px1(i)= p(1,1); px2(i)= p(2,1);
     py1(i)= p(1,2); py2(i)= p(2,2);
@@ -57,8 +65,9 @@ end
 function p= selectPeaks(x, i, promThresh)
 % Select the 2 most prominent peaks (the 1st is always the total maximum)
 
+[n,m]= size(x);
 prominence= zeros(length(i),1);
-medx= median(x(:));
+medx= mean(x(:));
 [i(:,2), i(:,1)]= ind2sub(size(x), i);
 p(1,:)= i(1,:);
 p(2,:)= [0,0];
@@ -68,7 +77,7 @@ for ii=2:length(i)
     xr= i(1,1):-1:i(ii,1);
   end
   yr= round(linspace(i(1,2),i(ii,2), length(xr)));
-  ir= sub2ind(size(x),yr,xr);
+  ir= yr+n*(xr-1);
   candidate= x(ir(end));
   % prominence of a peak: how the depth of the valley between the 2 peaks
   % compares to the median level of the image. 0 means no valley, 1 is a valley
