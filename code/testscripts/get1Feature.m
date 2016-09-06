@@ -35,12 +35,10 @@ datanames= who('bul*'); % bul-nobul separation for supervised learning
 for i=1:numSubjects
   eegs = eval(datanames{i}); % get all channels of current subject
   eegs = eegs(channEPN,EPN_lower:EPN_upper);  % get only the period of time corresponding to the current ERP
-  tic;
   f= extractFeatures(eegs, samplingRate, wltSmoothStd, []);  % no plotting
-  toc
   svmTrainingSet_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i, :)= [f,channEPN'];
-  svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'bul'};  % den douleuei ayth h entolh. kalytera na enswmatosoyme 7o stoixeio, 1->bul, 0->nobul giati an kanoume random anakatema den tha xreiazetai na vriskoume pali poios einai bul kai poios oxi
-  save data/results/features/svmTrainingSet_T1all.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN; % save every subject completed not to lose data. that should be 5 mins of computer time lost maximum
+  svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'bul'};
+  save data/results/features/svmTrainingSet_T1EPN.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN; % save every subject completed not to lose data. that should be 5 mins of computer time lost maximum
 end
 
 datanames= who('nobul*');
@@ -49,7 +47,7 @@ for i=numSubjects+1 : 2*numSubjects
   eegs = eegs(channEPN,EPN_lower:EPN_upper);
   f= extractFeatures(eegs, samplingRate, wltSmoothStd, []);
   svmTrainingSet_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i, :)= [f,channEPN'];
-  svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'nobul'}; % den douleuei
-  save data/results/features/svmTrainingSet_T1all.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN;
+  svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'nobul'};
+  save data/results/features/svmTrainingSet_T1EPN.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN;
 end
 

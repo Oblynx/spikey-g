@@ -1,6 +1,6 @@
 %% Train SVM
 clear; close all;
-load data/results/features/svmTrainingSet_T1all.mat
+load data/results/features/svmTrainingSet_T1EPN.mat
 
 fullTset= svmTrainingSet_T1EPN(:,1:6);
 % Remove NaN values
@@ -20,7 +20,9 @@ svmTrainingSet_T1EPN= fullTset;
 svmModel_T1EPN = fitcsvm(svmTrainingSet_T1EPN, svmClassLabels_T1EPN, 'Standardize',true, ...
                    'CrossVal', 'on', 'kfold',5);
 % Show classification error
-svmModel_T1EPN.kfoldLoss
+fprintf('Classification error: %.1f%% \n', 100*svmModel_T1EPN.kfoldLoss);
+fprintf('Confusion matrix:\n');
+disp(confusion(svmModel_T1EPN, svmClassLabels_T1EPN))
 %silhouette(fullTset, kmeans(fullTset,2,'Replicates',5))
 
 %{
