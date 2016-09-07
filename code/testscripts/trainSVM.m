@@ -2,11 +2,11 @@
 clear; close all;
 load data/results/features/svmTrainingSet_T1EPN.mat
 
-fullTset= svmTrainingSet_T1EPN(:,1:6);
+fullTset= svmTrainingSet(:,1:6);
 % Remove NaN values
 dataToKeep= ~sum(isnan(fullTset),2);
 fullTset= fullTset(dataToKeep,:);
-svmClassLabels_T1EPN= svmClassLabels_T1EPN(dataToKeep);
+svmClassLabels= svmClassLabels(dataToKeep);
 
 % PCA into a lower-dimensional space. Data not linearly separable in < 3 dims
 %{
@@ -16,14 +16,13 @@ fullTset= fullTset(:,1:2);
 %c= pca(fullTset);
 %fullTset= fullTset*c(1:3,:)';
 
-svmTrainingSet_T1EPN= fullTset;
-svmModel_T1EPN = fitcsvm(svmTrainingSet_T1EPN, svmClassLabels_T1EPN, 'Standardize',true, ...
+svmTrainingSet= fullTset;
+svmModel = fitcsvm(svmTrainingSet, svmClassLabels, 'Standardize',true, ...
                    'CrossVal', 'on', 'kfold',5);
 % Show classification error
-fprintf('Classification error: %.1f%% \n', 100*svmModel_T1EPN.kfoldLoss);
+fprintf('Classification error: %.1f%% \n', 100*svmModel.kfoldLoss);
 fprintf('Confusion matrix:\n');
-disp(confusionMatrix(svmModel_T1EPN, svmClassLabels_T1EPN, true))
-%silhouette(fullTset, kmeans(fullTset,2,'Replicates',5))
+disp(confusionMatrix(svmModel, svmClassLabels, true))
 
 %{
 % Try each predictor alone
