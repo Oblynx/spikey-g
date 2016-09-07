@@ -32,6 +32,7 @@ loadAll('data/PTES_2/matfilesT2/');   % loads all mat files in specified directo
 
 % get feature vectors for EPN
 datanames= who('bul*'); % bul-nobul separation for supervised learning
+tic;
 for i=1:numSubjects
   eegs = eval(datanames{i}); % get all channels of current subject
   eegs = eegs(channEPN,EPN_lower:EPN_upper);  % get only the period of time corresponding to the current ERP
@@ -40,6 +41,7 @@ for i=1:numSubjects
   svmClassLabels_T1EPN(nChannEPN*(i-1)+1 : nChannEPN*i)= {'bul'};
   save data/results/features/svmTrainingSet_T1EPN.mat svmTrainingSet_T1EPN svmClassLabels_T1EPN; % save every subject completed not to lose data. that should be 5 mins of computer time lost maximum
 end
+toc
 
 datanames= who('nobul*');
 for i=numSubjects+1 : 2*numSubjects

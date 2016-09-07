@@ -14,11 +14,11 @@ channels= size(eeg,1);
 t= (0:size(eeg,2)-1)/fs;
 %{
 a0 = 1.67^(1/voicesPerOct);
-numoctaves = 10;
+numoctaves = 12;
 scales = 4*a0.^(voicesPerOct:1/voicesPerOct:numoctaves*voicesPerOct);
 pfreq = scal2frq(scales,mwave,1/fs);
 wcf= zeros(length(scales),length(t),channels);
-for i=1:channels
+parfor i=1:channels
   % Calc wavelets
   wcf(:,:,i) = cwt(eeg(i,:),scales,mwave);
 end
@@ -35,10 +35,10 @@ end
 %}
 
 %% Alt using cwtft
-scales= helperCWTTimeFreqVector(0.3,65,centfrq('morl'),1/fs,8);
+scales= helperCWTTimeFreqVector(0.3,65,centfrq('morl'),1/fs,voicesPerOct);
 pfreq= mean([0.3*scales(end),65*scales(1)])./scales;
 wcf= zeros(length(scales),length(t),channels);
-for i=1:channels
+parfor i=1:channels
   % Calc wavelets
   wt= cwtft({eeg(i,:),1/fs},'wavelet','morl','scales',scales,'padmode','zpd');
   wcf(:,:,i)= real(wt.cfs);
@@ -49,3 +49,4 @@ if ~isempty(plottype)
     wpfreqgram(plottype, wcf(:,:,i), pfreq, t,eeg(i,:));
   end
 end
+

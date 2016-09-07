@@ -22,7 +22,7 @@ svmModel_T1EPN = fitcsvm(svmTrainingSet_T1EPN, svmClassLabels_T1EPN, 'Standardiz
 % Show classification error
 fprintf('Classification error: %.1f%% \n', 100*svmModel_T1EPN.kfoldLoss);
 fprintf('Confusion matrix:\n');
-disp(confusion(svmModel_T1EPN, svmClassLabels_T1EPN))
+disp(confusionMatrix(svmModel_T1EPN, svmClassLabels_T1EPN, true))
 %silhouette(fullTset, kmeans(fullTset,2,'Replicates',5))
 
 %{
