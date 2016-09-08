@@ -1,0 +1,5 @@
+# Features
+- cwtft
+- padmode=zpd
+- image_smoothing=1
+
