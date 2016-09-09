@@ -1,6 +1,7 @@
-%% Train SVM
-clear; close all;
-load data/results/features/svmTrainingSet_T1EPN.mat
+function [svmModel, error, confusMat]= trainSvm(featureFile)
+% Loads svm training set & class labels from "featureFile" and trains SVM model
+
+load(featureFile);
 
 fullTset= svmTrainingSet(:,1:6);
 % Remove NaN values
@@ -18,11 +19,13 @@ fullTset= fullTset(:,1:2);
 
 svmTrainingSet= fullTset;
 svmModel = fitcsvm(svmTrainingSet, svmClassLabels, 'Standardize',true, ...
-                   'CrossVal', 'on', 'kfold',5);
+                   'CrossVal', 'on', 'kfold',4);
+error= 100*svmModel.kfoldLoss;
+confusMat= confusionMatrix(svmModel, svmClassLabels, true);
 % Show classification error
-fprintf('Classification error: %.1f%% \n', 100*svmModel.kfoldLoss);
+fprintf('Classification error: %.1f%% \n', error);
 fprintf('Confusion matrix:\n');
-disp(confusionMatrix(svmModel, svmClassLabels, true))
+disp(confusMat);
 
 %{
 % Try each predictor alone
