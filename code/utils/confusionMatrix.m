@@ -12,7 +12,9 @@ tp= sum(truePred & posPred);
 tn= sum(truePred & negPred);
 fp= sum(~truePred & posPred);
 fn= sum(~truePred & negPred);
-cfm= [tp,fn;fp,tn];
+
+setSize= length(pred);
+cfm= round(100*[tp/setSize,fn/setSize;fp/setSize,tn/setSize],2);
 
 if plot
   truth= [~truth, truth]';

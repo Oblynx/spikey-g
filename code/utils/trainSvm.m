@@ -25,7 +25,9 @@ confusMat= confusionMatrix(svmModel, svmClassLabels, true);
 % Show classification error
 fprintf('Classification error: %.1f%% \n', error);
 fprintf('Confusion matrix:\n');
+format bank;
 disp(confusMat);
+format short;
 
 %{
 % Try each predictor alone
