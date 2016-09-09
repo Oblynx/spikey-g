@@ -1,0 +1,4 @@
+# SVM
+- Full trainset
+- crossval kfold=4
+- kernel=linear

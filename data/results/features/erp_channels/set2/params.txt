@@ -1,0 +1,9 @@
+# Features
+- cwtft
+  - padmode=zpd
+  - freq lims=[0.3 65]
+- image_smoothing=0
+- preprocess
+  - Entire signals for selected channels
+  - norm(mean,std)
+  - ICA
