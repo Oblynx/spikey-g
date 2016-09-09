@@ -27,8 +27,11 @@ datanames= who('bul*'); % bul-nobul separation for supervised learning
 subjFiller= ones(nChannels,1);
 tic;
 for i=1:numSubjects
-  eegs = eval(datanames{i}); % get all channels of current subject
-  eegs = eegs(channels,samples);  % get only the period of time corresponding to the current ERP
+  eegs= eval(datanames{i}); % get all channels of current subject
+  eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
+  
+  eegs= preprocess(eegs);
+  eegs= eegs(:,samples);
   f= extractFeatures(eegs, fs, wltSmoothStd, []);  % no plotting
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',i*subjFiller];
@@ -41,6 +44,8 @@ datanames= who('nobul*');
 for i=numSubjects+1 : 2*numSubjects
   eegs = eval(datanames{i-numSubjects});
   eegs = eegs(channels,samples);
+  
+  eegs= preprocess(eegs);
   f= extractFeatures(eegs, fs, wltSmoothStd, []);
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',(i-numSubjects)*subjFiller];
