@@ -15,7 +15,7 @@ else
 end
 
 t= (0:size(eeg,2))/fs;
-[w,pfreq]= eegcwt(eeg, fs, 8, 'morl',plottype);
+[w,pfreq]= eegcwt(eeg, fs, 16, 'morl',plottype);
 % Normalized energy for each coefficient
 for i= 1:size(w,3)
   if sum(abs(eeg(i,:))) > 1E-3
@@ -37,10 +37,12 @@ parfor i= 1:size(w,3)
     else
       xsm= x;
     end
+    
     % Find all the local maxima
     iM= find(imregionalmax(xsm));
     [~,idxSorted]= sort(xsm(iM),'descend');
     iM= iM(idxSorted);
+    
     % Select 2 most prominent peaks
     p= selectPeaks(xsm,iM, 0.2);
     px1(i)= p(1,1); px2(i)= p(2,1);

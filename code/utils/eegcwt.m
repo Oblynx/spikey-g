@@ -35,8 +35,8 @@ end
 %}
 
 %% Alt using cwtft
-scales= helperCWTTimeFreqVector(0.3,65,centfrq('morl'),1/fs,voicesPerOct);
-pfreq= mean([0.3*scales(end),65*scales(1)])./scales;
+scales= helperCWTTimeFreqVector(0.3,100,centfrq('morl'),1/fs,voicesPerOct);
+pfreq= mean([0.3*scales(end),100*scales(1)])./scales;
 wcf= zeros(length(scales),length(t),channels);
 parfor i=1:channels
   % Calc wavelets

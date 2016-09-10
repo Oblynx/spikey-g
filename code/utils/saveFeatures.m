@@ -3,6 +3,7 @@ function saveFeatures(dataDir, saveFile, timeLimits, channels, wltSmoothStd)
 % May become variables
 fs = 250;
 numSubjects= 18;
+nFeatures= 6;
 
 %% Set up variables
 % conversion of the times above to sample number. Sample no1 corresponds to
@@ -15,7 +16,7 @@ samples= samples(1):samples(2);
 nChannels= length(channels);
 
 % Test 1 data (1 feature matrix for each ERP)
-svmTrainingSet= zeros(nChannels*numSubjects*2,8);  %[channel]*[subject]*[class]=9216
+svmTrainingSet= zeros(nChannels*numSubjects*2,nFeatures+2);  %[channel]*[subject]*[class]=9216
 svmClassLabels= cell(nChannels*numSubjects*2,1);   % bul or nobul, for supervised learning
 
 %% Load all data and prepare the training set 

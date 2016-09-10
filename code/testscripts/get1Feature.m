@@ -11,7 +11,7 @@ timeLimits= timeLims_N170;
 channels= channels_N170;
 
 % Save features using these properties
-saveFeatures(dir,savefile,timeLimits,channels,0);
+saveFeatures(dir,savefile,timeLimits,channels,2);
 
 
 %% WARNING
