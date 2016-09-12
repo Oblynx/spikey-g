@@ -15,5 +15,10 @@ saveFeatures(dir,savefile,timeLimits,channels,2);
 
 
 %% WARNING
-[model, err, conf]= trainSvm(savefile);
+[savefile_men, savefile_women]= splitMenWomen(savefile, 'data/menWomen.mat');
+% Train men's SVM
+[model, err, conf]= trainSvm(savefile_men);
+save(tresultsfile, 'model','err','conf');
+% Train women's SVM
+[model, err, conf]= trainSvm(savefile_women);
 save(tresultsfile, 'model','err','conf');
