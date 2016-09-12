@@ -11,14 +11,14 @@ timeLimits= timeLims_N170;
 channels= channels_N170;
 
 % Save features using these properties
-saveFeatures(dir,savefile,timeLimits,channels,2);
+saveFeatures(dir,savefile,timeLimits,channels,1);
 
 
 %% WARNING
-[savefile_men, savefile_women]= splitMenWomen(savefile, 'data/menWomen.mat');
+%[savefile_men, savefile_women]= splitMenWomen(savefile, 'data/menWomen.mat');
 % Train men's SVM
-[model, err, conf]= trainSvm(savefile_men);
+[model, err, conf]= trainSvm(savefile);
 save(tresultsfile, 'model','err','conf');
 % Train women's SVM
-[model, err, conf]= trainSvm(savefile_women);
-save(tresultsfile, 'model','err','conf');
+%[model, err, conf]= trainSvm(savefile_women);
+%save(tresultsfile, 'model','err','conf');

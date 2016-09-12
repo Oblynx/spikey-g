@@ -10,6 +10,7 @@ dataToKeep= ~sum(isnan(fullTset),2);
 fullTset= fullTset(dataToKeep,:);
 svmClassLabels= svmClassLabels(dataToKeep);
 
+
 % PCA into a lower-dimensional space. Data not linearly separable in < 3 dims
 %{
 [~, fullTset]= pcares(zscore(fullTset), 2);
@@ -52,7 +53,7 @@ subplot(248); histogram(fullTset(classCut+1:end,6), 12); title('wid2,nobul');
 
 figure;
 %% Train SVM
-svmTrainingSet= fullTset(:,[2,3,5,6]);
+svmTrainingSet= fullTset(:,[1,2,3,4,5,6]);
 tic;
 svmModel= fitcsvm(svmTrainingSet, svmClassLabels, 'Standardize',true, ...
                    'KernelScale','auto','KernelFunc','rbf');
@@ -60,10 +61,10 @@ fprintf('Training time: %.2f\n',toc);
 % Calculate classification error
 tic;
 for i=1:3
-  rng(i); cvSvmModel= svmModel.crossval('kfold',4);
+  rng(i); cvSvmModel= svmModel.crossval('kfold',3);
   error(i)= 100*cvSvmModel.kfoldLoss;
 end
-fprintf('CV time: %.3f\n', toc);
+fprintf('Cross Validation time: %.3f\n', toc);
 error= mean(error); % Mean of 3 independent 4-fold errors (12 folds total)
 svmModel= cvSvmModel;
 confusMat= confusionMatrix(svmModel, svmClassLabels, true);
@@ -87,11 +88,11 @@ for i= 1:size(selPreds,1)
   svmModel= fitcsvm(trainingSubset, svmClassLabels, 'Standardize',true, ...
                      'KernelScale','auto','KernelFunc','rbf');
   for j=1:3
-    rng(j); cvSvmModel= svmModel.crossval('kfold',4);
+    rng(j); cvSvmModel= svmModel.crossval('kfold',3);
     error(j)= 100*cvSvmModel.kfoldLoss;
   end
   error= mean(error);
-  if error < 38
+  if error < 45
     % Show classification error
     fprintf('%s= %f\n',[predNames{selPreds(i,:)}],error);
   end
