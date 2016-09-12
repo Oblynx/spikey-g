@@ -1,5 +1,11 @@
 function cfm= confusionMatrix(svm, truth, plot)
-% labels in cell array
+% cfm= confusionMatrix(svm, truth, plot)
+% Calculates the confusion matrix (100*[truePos,falseNeg;falsePos,trueNeg]/total)
+% and displays the results graphically
+%
+% svm: cross-validated SVM model
+% truth: cell array of true class labels
+% plot: [bool] whether to display the results graphically
 
 pred= svm.kfoldPredict;
 truth= cellfun(@class2val, truth);
@@ -14,7 +20,7 @@ fp= sum(~truePred & posPred);
 fn= sum(~truePred & negPred);
 
 setSize= length(pred);
-cfm= round(100*[tp/setSize,fn/setSize;fp/setSize,tn/setSize],2);
+cfm= round(100.*[tp,fn;fp,tn]./setSize,2);
 
 if plot
   truth= [~truth, truth]';

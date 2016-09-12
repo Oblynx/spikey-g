@@ -15,7 +15,7 @@ else
 end
 
 t= (0:size(eeg,2))/fs;
-[w,pfreq]= eegcwt(eeg, fs, 16, 'morl',plottype);
+[w,pfreq]= eegcwt(eeg, fs, 16, 100,plottype);
 % Normalized energy for each coefficient
 for i= 1:size(w,3)
   if sum(abs(eeg(i,:))) > 1E-3
