@@ -1,4 +1,4 @@
-function Hd = ica_filt
+function Hd = ica_filt(filtFrq)
 %ICA_FILT Returns a discrete-time filter object.
 
 % MATLAB Code
@@ -10,8 +10,8 @@ function Hd = ica_filt
 % All frequency values are in Hz.
 Fs = 250;  % Sampling Frequency
 
-Fpass = 42;              % Passband Frequency
-Fstop = 50;              % Stopband Frequency
+Fpass = filtFrq(1);      % Passband Frequency
+Fstop = filtFrq(2);      % Stopband Frequency
 Dpass = 0.057501127785;  % Passband Ripple
 Dstop = 0.01;            % Stopband Attenuation
 dens  = 20;              % Density Factor

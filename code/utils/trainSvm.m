@@ -1,4 +1,4 @@
-function [svmModel, error, confusMat]= trainSvm(featureFile)
+function [svmModel, error, confusMat]= trainSvm(featureFile, params)
 % Loads svm training set & class labels from "featureFile" and trains SVM model
 
 load(featureFile);
@@ -53,7 +53,7 @@ subplot(248); histogram(fullTset(classCut+1:end,6), 12); title('wid2,nobul');
 
 figure;
 %% Train SVM
-svmTrainingSet= fullTset(:,[1,2,3,4,5,6]);
+svmTrainingSet= fullTset(:,params.selectedPredictors);
 tic;
 svmModel= fitcsvm(svmTrainingSet, svmClassLabels, 'Standardize',true, ...
                    'KernelScale','auto','KernelFunc','rbf');
@@ -61,7 +61,7 @@ fprintf('Training time: %.2f\n',toc);
 % Calculate classification error
 tic;
 for i=1:3
-  rng(i); cvSvmModel= svmModel.crossval('kfold',3);
+  rng(i); cvSvmModel= svmModel.crossval('kfold',4);
   error(i)= 100*cvSvmModel.kfoldLoss;
 end
 fprintf('Cross Validation time: %.3f\n', toc);
@@ -88,7 +88,7 @@ for i= 1:size(selPreds,1)
   svmModel= fitcsvm(trainingSubset, svmClassLabels, 'Standardize',true, ...
                      'KernelScale','auto','KernelFunc','rbf');
   for j=1:3
-    rng(j); cvSvmModel= svmModel.crossval('kfold',3);
+    rng(j); cvSvmModel= svmModel.crossval('kfold',4);
     error(j)= 100*cvSvmModel.kfoldLoss;
   end
   error= mean(error);
