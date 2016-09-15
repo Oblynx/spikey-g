@@ -2,13 +2,13 @@ clear; close all;
 load('data/erp_time_channels.mat');
 
 %% Parameters
-
 erps= {'EPN','N170','P300','LPP'};
 dir= 'data/PTES_2/matfilesT';
 savefile= 'data/results/features/tmp/svmTrainingSet_';
 tresultsfile= 'data/results/svm/tmp/trainResults_';
 
-parameters= struct('filtFrq',[44,52], 'waveMaxFrq',52, ...
+parameters= struct('ica',true, 'ica_filt',false, ...
+                   'filtFrq',[44,52], 'waveMaxFrq',52, ...
                    'voicesPerOct',16, 'waveSmoothStd',1, ...
                    'prominenceThreshold',0.5, ...
                    'selectedPredictors',1:6, 'svmPlotGraphs',false, ...
@@ -18,6 +18,7 @@ genderAnalysis= false;
 extractFeatures= true;
 
 %% Extract features
+parameters
 if extractFeatures
   fprintf('--> Extracting features...\n');
   for erp= 1:length(erps)
@@ -77,3 +78,4 @@ for erp= 1:length(erps)
     save(tresultsfile2_women, 'model','err','conf');
   end
 end
+fprintf('\n');

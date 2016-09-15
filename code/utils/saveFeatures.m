@@ -31,7 +31,7 @@ for i=1:numSubjects
   eegs= eval(datanames{i}); % get all channels of current subject
   eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
   
-  eegs= preprocess(eegs, params.filtFrq);
+  eegs= preprocess(eegs, params);
   eegs= eegs(:,samples);
   f= extractFeatures(eegs, fs, params.voicesPerOct, params.waveMaxFrq, ...
                      params.waveSmoothStd, params.prominenceThreshold, []);  % no plotting
@@ -45,9 +45,10 @@ save(saveFile,'svmTrainingSet','svmClassLabels');
 datanames= who('nobul*');
 for i=numSubjects+1 : 2*numSubjects
   eegs = eval(datanames{i-numSubjects});
-  eegs = eegs(channels,samples);
+  eegs = eegs(channels,:);
   
-  eegs= preprocess(eegs, params.filtFrq);
+  eegs= preprocess(eegs, params);
+  eegs= eegs(:,samples);
   f= extractFeatures(eegs, fs, params.voicesPerOct, params.waveMaxFrq, ...
                      params.waveSmoothStd, params.prominenceThreshold, []);  % no plotting
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...

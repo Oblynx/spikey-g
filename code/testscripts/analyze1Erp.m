@@ -1,16 +1,18 @@
 clear; close all;
-
 load('data/erp_time_channels.mat');
+
+%% Parameters
 dir= 'data/PTES_2/matfilesT1/';
 savefile= 'data/results/features/tmp/svmTrainingSet_tmp.mat';
 tresultsfile= 'data/results/svm/tmp/trainResults_tmp.mat';
 
-parameters= struct('filtFrq',[44,52], 'waveMaxFrq',52, ...
+parameters= struct('ica',true, 'ica_filt',false, ...
+                   'filtFrq',[84,92], 'waveMaxFrq',90, ...
                    'voicesPerOct',16, 'waveSmoothStd',1, ...
                    'prominenceThreshold',0.5, ...
                    'selectedPredictors',1:6, 'svmPlotGraphs',false, ...
                    'singlePredictorPerformance',true, ...
-                   'singlePredictorPerformThreshold',40 );
+                   'singlePredictorPerformThreshold',42 );
 genderAnalysis= false;
 extractFeatures= true;
 
@@ -19,7 +21,8 @@ extractFeatures= true;
 timeLimits= timeLims_N170;
 channels= channels_N170;
 
-% Extract features using these properties
+%% Extract features
+parameters
 if extractFeatures
   fprintf('--> Extracting features...\n');
   saveFeatures(dir,savefile,timeLimits,channels, parameters);
@@ -47,3 +50,4 @@ else
   [model, err, conf]= trainSvm(savefile_women, parameters);
   save(tresultsfile_women, 'model','err','conf');
 end
+fprintf('\n');
