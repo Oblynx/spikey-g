@@ -25,6 +25,7 @@ cfm= round(100.*[tp,fn;fp,tn]./setSize,2);
 if plot
   truth= [~truth, truth]';
   pred= [~pred, pred]';
+  figure;
   plotconfusion(truth,pred);
 end
 end
