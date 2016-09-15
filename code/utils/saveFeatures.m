@@ -39,7 +39,7 @@ for i=1:numSubjects
                                     [f,channels',i*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'bul'};
 end
-fprintf('[saveFeatures] Time for all subjects, bul: %.2fs', toc);
+fprintf('[saveFeatures] Time for all subjects, bul: %.2fs\n', toc);
 save(saveFile,'svmTrainingSet','svmClassLabels');
 
 datanames= who('nobul*');
