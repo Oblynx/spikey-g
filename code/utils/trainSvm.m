@@ -9,11 +9,46 @@ fullTset= svmTrainingSet(:,1:6);
 dataToKeep= ~sum(isnan(fullTset),2);
 fullTset= fullTset(dataToKeep,:);
 svmClassLabels= svmClassLabels(dataToKeep);
-
-svmTrainingSet= fullTset(:,params.predictor.selectedPredictors);
-%% Calculate statistics
-R= corr(fullTset);% R= (R>0.75) + 0.5*(R<=0.75 & R>=0.25);
 classCut= floor(length(svmClassLabels)/2);
+
+%% Predictor ICA
+if params.predictor.predICA
+  fullTset= ica(fullTset, 6);
+end
+
+%% Predictor ranking
+if params.predictor.predRanking
+  % Calculate histograms
+  figure; hold on;
+  for pred= 1:6
+    histObjBul= histogram(fullTset(1:classCut,pred), 'Normalization','Probability');
+    histObjNobul= histogram(fullTset(classCut+1:end,pred), 'Normalization','Probability');
+    % Normalize x axis
+    bw= min([histObjBul.BinWidth, histObjNobul.BinWidth]);
+    bmax= max([ histObjBul.BinEdges, histObjNobul.BinEdges]);
+    bmin= min([ histObjBul.BinEdges, histObjNobul.BinEdges]);
+    bedge= bmin:bw:bmax;
+    if bedge(end) < bmax, bedge= [bedge, bedge(end)+bw]; end
+    histObjBul.BinWidth= bw; histObjNobul.BinWidth= bw;
+    histObjBul.BinEdges= bedge; histObjNobul.BinEdges= bedge;
+    % Get histogram values
+    histBul{pred}= histObjBul.Values;
+    histNobul{pred}= histObjNobul.Values;
+    histX{pred}= bedge(1:end-1) + bw/2;     % bin centers
+  end
+
+  % Calculate discriminative ability of each predictor
+  for pred= 1:6
+    discrim(pred)= kldiv(histX{pred}, histBul{pred}, histNobul{pred}, 'sym');
+  end
+  % Rank predictors according to their discriminative ability
+  [~,rankedPred]= sort(discrim, 'descend');
+  svmTrainingSet= fullTset(:, rankedPred(1:params.predictor.numPred));
+else
+  svmTrainingSet= fullTset(:, params.predictor.selectedPredictors);
+end
+%% Calculate statistics
+R= corr(fullTset);
 fprintf('Peak correlation: %.2f\n', R(1,4));
 
 %% Plot training set?
