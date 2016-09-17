@@ -36,6 +36,7 @@ if params.predictor.predRanking
     histNobul{pred}= histObjNobul.Values;
     histX{pred}= bedge(1:end-1) + bw/2;     % bin centers
   end
+  hold off; close;
 
   % Calculate discriminative ability of each predictor
   for pred= 1:6
