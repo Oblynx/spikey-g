@@ -43,7 +43,7 @@ if params.predictor.predRanking
   end
   % Rank predictors according to their discriminative ability
   [~,rankedPred]= sort(discrim, 'descend');
-  svmTrainingSet= fullTset(:, rankedPred(1:params.predictor.numPred));
+  svmTrainingSet= fullTset(:, rankedPred(params.predictor.rankSelect));
 else
   svmTrainingSet= fullTset(:, params.predictor.selectedPredictors);
 end
@@ -74,10 +74,12 @@ confusMat= confusionMatrix(svmModel, svmClassLabels, params.func.svmPlotGraphs);
 
 % Show classification error
 fprintf(' - Classification error: %.1f%% \n', error);
-fprintf('Confusion matrix:\n');
-format bank;
-disp(confusMat);
-format short;
+if params.gen.verbose
+  fprintf('Confusion matrix:\n');
+  format bank;
+  disp(confusMat);
+  format short;
+end
 
 %% Try each predictor alone
 if params.func.singlePredictorPerformance
