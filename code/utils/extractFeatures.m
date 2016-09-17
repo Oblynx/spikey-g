@@ -79,12 +79,18 @@ for ii=2:length(i)
     xr= i(1,1):-1:i(ii,1);
   end
   yr= round(linspace(i(1,2),i(ii,2), length(xr)));
-  ir= yr+n*(xr-1);
-  candidate= x(ir(end));
+  ir= yr+n*(xr-1);      % Linear indices of between-maxima line
+  maximline= x(ir);     % Between-maxima line
+  
+  candidate= maximline(end);
   % prominence of a peak: how the depth of the valley between the 2 peaks
   % compares to the median level of the image. 0 means no valley, 1 is a valley
   % as deep as the signal median
-  prominence(ii)= (candidate-min(x(ir)))/(candidate-medx);
+  %prominence(ii)= (candidate-min(x(ir)))/(candidate-medx);
+  valley= sum(abs(maximline(maximline < candidate) - candidate));     % = valley * length(maximline)
+  reflevel= abs(medx - candidate)*sqrt(size(x,1).^2+size(x,2).^2);    % = (mean-candidate) * diagonal
+  prominence(ii)= valley/reflevel;
+  
   if prominence(ii) > promThresh
     p(2,:)= i(ii,:);
     break;
