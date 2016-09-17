@@ -1,4 +1,4 @@
-function [f]= extractFeatures(eeg, fs, voicesPerOct, maxFrq, wsmooth, prominenceThreshold, plottype)
+function [f]= extractFeatures(eeg, fs, param, plottype)
 % eeg: [channel]x[time] Part of eeg time series from which the characteristics
 % of the 2 most prominent wavelet peaks will be extracted
 
@@ -15,7 +15,7 @@ else
 end
 
 t= (0:size(eeg,2))/fs;
-[w,pfreq]= eegcwt(eeg, fs, voicesPerOct, maxFrq, plottype);
+[w,pfreq]= eegcwt(eeg, fs, param.voicesPerOct, param.waveMaxFrq, plottype);
 % Normalized energy for each coefficient
 for i= 1:size(w,3)
   if sum(abs(eeg(i,:))) > 1E-3
@@ -32,8 +32,8 @@ px1= zeros(size(eeg,1)); px2= px1; py1= px1; py2= px1;
 parfor i= 1:size(w,3)
   x= w(:,:,i);
   if ~isnan(x(1,1))
-    if wsmooth > 0
-      xsm= imgaussfilt(x,wsmooth);  % Smoothen image
+    if param.waveSmoothStd > 0
+      xsm= imgaussfilt(x,param.waveSmoothStd);  % Smoothen image
     else
       xsm= x;
     end
@@ -44,7 +44,7 @@ parfor i= 1:size(w,3)
     iM= iM(idxSorted);
     
     % Select 2 most prominent peaks
-    p= selectPeaks(xsm,iM, prominenceThreshold);
+    p= selectPeaks(xsm,iM, param.prominenceThreshold);
     px1(i)= p(1,1); px2(i)= p(2,1);
     py1(i)= p(1,2); py2(i)= p(2,2);
     pwidth= peakWidth(xsm, [px1(i),py1(i);px2(i),py2(i)]);

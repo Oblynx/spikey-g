@@ -10,54 +10,22 @@ dataToKeep= ~sum(isnan(fullTset),2);
 fullTset= fullTset(dataToKeep,:);
 svmClassLabels= svmClassLabels(dataToKeep);
 
-
-% PCA into a lower-dimensional space. Data not linearly separable in < 3 dims
-%{
-[~, fullTset]= pcares(zscore(fullTset), 2);
-fullTset= fullTset(:,1:2);
-%}
-%c= pca(fullTset);
-%fullTset= fullTset*c(1:3,:)';
-
+svmTrainingSet= fullTset(:,params.predictor.selectedPredictors);
 %% Calculate statistics
 R= corr(fullTset);% R= (R>0.75) + 0.5*(R<=0.75 & R>=0.25);
 classCut= floor(length(svmClassLabels)/2);
 fprintf('Peak correlation: %.2f\n', R(1,4));
 
 %% Plot training set?
-if params.svmPlotGraphs
-  imagesc(R); title('Pearson correlation'); colorbar;
-
-  figure; subplot(2,4,[1 2 5 6]);
-  gscatter(fullTset(:,1),fullTset(:,4),svmClassLabels,'rk','.');
-  title('val'); xlabel('val1'); ylabel('val2');
-  subplot(243); histogram(fullTset(1:classCut,1), 12); title('val1,bul');
-  subplot(244); histogram(fullTset(1:classCut,4), 12); title('val2,bul');
-  subplot(247); histogram(fullTset(classCut+1:end,1), 12); title('val1,nobul');
-  subplot(248); histogram(fullTset(classCut+1:end,4), 12); title('val2,nobul');
-
-  figure; subplot(2,4,[1 2 5 6]);
-  gscatter(fullTset(:,2),fullTset(:,5),svmClassLabels,'rk','.');
-  title('frq'); xlabel('frq1'); ylabel('frq2');
-  subplot(243); histogram(fullTset(1:classCut,2), 12); title('frq1,bul');
-  subplot(244); histogram(fullTset(1:classCut,5), 12); title('frq2,bul');
-  subplot(247); histogram(fullTset(classCut+1:end,2), 12); title('frq1,nobul');
-  subplot(248); histogram(fullTset(classCut+1:end,5), 12); title('frq2,nobul');
-
-  figure; subplot(2,4,[1 2 5 6]);
-  gscatter(fullTset(:,3),fullTset(:,6),svmClassLabels,'rk','.');
-  title('wid'); xlabel('wid1'); ylabel('wid2');
-  subplot(243); histogram(fullTset(1:classCut,3), 12); title('wid1,bul');
-  subplot(244); histogram(fullTset(1:classCut,6), 12); title('wid2,bul');
-  subplot(247); histogram(fullTset(classCut+1:end,3), 12); title('wid1,nobul');
-  subplot(248); histogram(fullTset(classCut+1:end,6), 12); title('wid2,nobul');
+if params.func.svmPlotGraphs
+  svmPlotGraphs(fullTset,svmClassLabels,classCut,R);
 end
 %% Train SVM
-svmTrainingSet= fullTset(:,params.selectedPredictors);
 %tic;
 svmModel= fitcsvm(svmTrainingSet, svmClassLabels, 'Standardize',true, ...
                    'KernelScale','auto','KernelFunc','rbf');
 %fprintf('Training time: %.2f\n',toc);
+
 % Calculate classification error
 %tic;
 for i=1:3
@@ -67,7 +35,7 @@ end
 %fprintf('Cross Validation time: %.3f\n', toc);
 error= mean(error); % Mean of 3 independent 4-fold errors (12 folds total)
 svmModel= cvSvmModel;
-confusMat= confusionMatrix(svmModel, svmClassLabels, params.svmPlotGraphs);
+confusMat= confusionMatrix(svmModel, svmClassLabels, params.func.svmPlotGraphs);
 
 % Show classification error
 fprintf(' - Classification error: %.1f%% \n', error);
@@ -76,9 +44,8 @@ format bank;
 disp(confusMat);
 format short;
 
-
 %% Try each predictor alone
-if params.singlePredictorPerformance
+if params.func.singlePredictorPerformance
   k= 1;
   predNames= {'val1 ','frq1 ','wid1 ', ...
               'val2 ','frq2 ','wid2 '};
@@ -93,7 +60,7 @@ if params.singlePredictorPerformance
       error(j)= 100*cvSvmModel.kfoldLoss;
     end
     error= mean(error);
-    if error < params.singlePredictorPerformThreshold
+    if error < params.func.singlePredictorPerformThreshold
       % Show classification error
       fprintf('%s= %f\n',[predNames{selPreds(i,:)}],error);
     end

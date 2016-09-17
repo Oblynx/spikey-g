@@ -1,5 +1,4 @@
 function [Zica A T] = ica(Z,r,dispFlag)
-%--------------------------------------------------------------------------
 % Syntax:       Zica = myICA(Z,r);
 %               Zica = myICA(Z,r,dispFlag);
 %               [Zica A T mu] = myICA(Z,r);
