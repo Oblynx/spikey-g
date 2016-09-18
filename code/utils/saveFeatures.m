@@ -1,9 +1,9 @@
-function saveFeatures(dataDir, saveFile, timeLimits, channels, params)
+function saveFeatures(dataDir, saveFile, timeLimits, channels, params, genparams)
 
 % May become arguments
 fs = 250;
 numSubjects= 18;
-nFeatures= 6;
+nFeatures= 3*params.wave.peaksNum;
 
 %% Set up variables
 % conversion of the times above to sample number. Sample no1 corresponds to
@@ -26,7 +26,7 @@ loadAll(dataDir);   % loads all mat files in specified directory
 % get feature vectors for EPN
 datanames= who('bul*'); % bul-nobul separation for supervised learning
 subjFiller= ones(nChannels,1);
-tic;
+if genparams.verbose>0, tic; end
 for i=1:numSubjects
   eegs= eval(datanames{i}); % get all channels of current subject
   eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
@@ -38,7 +38,7 @@ for i=1:numSubjects
                                     [f,channels',i*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'bul'};
 end
-fprintf('[saveFeatures] Time for all subjects, bul: %.2fs\n', toc);
+if genparams.verbose>0, fprintf('[saveFeatures] Time for all subjects, bul: %.2fs\n', toc); end
 save(saveFile,'svmTrainingSet','svmClassLabels');
 
 datanames= who('nobul*');

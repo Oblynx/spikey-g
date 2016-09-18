@@ -1,4 +1,4 @@
-function [f]= extractFeatures(eeg, fs, param, plottype)
+function [f]= extractFeatures(eeg, fs, params, plottype)
 % eeg: [channel]x[time] Part of eeg time series from which the characteristics
 % of the 2 most prominent wavelet peaks will be extracted
 
@@ -7,6 +7,7 @@ if size(eeg,1) == 257
   eeg= eeg(1:256,:);
 end
 
+channelNum= size(eeg,1);
 lastfig= get(groot,'CurrentFigure');
 if ~isempty(lastfig)
   lastfig= lastfig.Number;
@@ -15,96 +16,116 @@ else
 end
 
 t= (0:size(eeg,2))/fs;
-[w,pfreq]= eegcwt(eeg, fs, param.voicesPerOct, param.waveMaxFrq, plottype);
+[w,pfreq]= eegcwt(eeg, fs, params.voicesPerOct, params.waveMaxFrq, plottype);
 % Normalized energy for each coefficient
-for i= 1:size(w,3)
-  if sum(abs(eeg(i,:))) > 1E-3
-    x= w(:,:,i);
-    x= abs(x.*x);
-    w(:,:,i)= 100*x./sum(x(:));
+for channel= 1:channelNum
+  if sum(abs(eeg(channel,:))) > 1E-3
+    wvt= w(:,:,channel);
+    wvt= abs(wvt.*wvt);
+    w(:,:,channel)= 100*wvt./sum(wvt(:));
   else
-    w(:,:,i)= NaN(size(w(:,:,i)));
+    w(:,:,channel)= NaN;
   end
 end
 
-f= zeros(size(eeg,1),6);
-px1= zeros(size(eeg,1)); px2= px1; py1= px1; py2= px1;
-parfor i= 1:size(w,3)
-  x= w(:,:,i);
-  if ~isnan(x(1,1))
-    if param.waveSmoothStd > 0
-      xsm= imgaussfilt(x,param.waveSmoothStd);  % Smoothen image
+f= zeros(channelNum, 3*params.peaksNum);
+peakLog= zeros(params.peaksNum, 2, channelNum);
+prominenceUnderflow= 0;
+for channel= 1:channelNum
+  wvt= w(:,:,channel);
+  if ~isnan(wvt(1,1))
+    if params.waveSmoothStd > 0
+      wvtSmooth= imgaussfilt(wvt,params.waveSmoothStd);  % Smoothen image
     else
-      xsm= x;
+      wvtSmooth= wvt;
     end
     
     % Find all the local maxima
-    iM= find(imregionalmax(xsm));
-    [~,idxSorted]= sort(xsm(iM),'descend');
+    iM= find(imregionalmax(wvtSmooth));
+    [~,idxSorted]= sort(wvtSmooth(iM),'descend');
     iM= iM(idxSorted);
     
-    % Select 2 most prominent peaks
-    p= selectPeaks(xsm,iM, param.prominenceThreshold);
-    px1(i)= p(1,1); px2(i)= p(2,1);
-    py1(i)= p(1,2); py2(i)= p(2,2);
-    pwidth= peakWidth(xsm, [px1(i),py1(i);px2(i),py2(i)]);
-
-    f(i,:)= [x(py1(i),px1(i)), pfreq(py1(i)), pwidth(1), ...
-             x(py2(i),px2(i)), pfreq(py2(i)), pwidth(2)];
+    % Select the most prominent peaks
+    [peaks, underfl]= selectNPeaks(wvtSmooth,iM, params.prominenceThreshold, params.peaksNum);
+    prominenceUnderflow= prominenceUnderflow+underfl;
+    pwidth= peakWidth(wvtSmooth, peaks);
+    
+    for peak=1:params.peaksNum
+      f(channel, 3*(peak-1)+1 : 3*peak)= ...
+          [wvt(peaks(peak,2), peaks(peak,1)), pfreq(peaks(peak,2)), pwidth(peak)];
+    end
+    
+    peakLog(:,:,channel)= peaks;
   else
-    f(i,:)= NaN(1,6);
+    f(channel,:)= NaN;
   end
 end
+if prominenceUnderflow > params.prominenceUnderflowWarningThreshold
+  fprintf('[extractFeatures]: WARNING! prominence underflow=%d\n', prominenceUnderflow);
+end
+
+% Highlight peaks
 if ~isempty(plottype)
-  for i= 1:size(w,3)
-    figure(lastfig + i);
-    hold on; plot(t([px1(i),px2(i)]), size(w,1)-[py1(i),py2(i)], 'rx'); % Highlight peaks
+  for channel= 1:channelNum
+    figure(lastfig + channel);
+    hold on;
+    for peak= 1:params.peaksNum
+      plot(t(peakLog(peak,1,channel)), size(w,1) - peakLog(peak,2,channel), 'rx');
+    end
     hold off;
   end
 end
 end
 
-function p= selectPeaks(x, i, promThresh)
-% Select the 2 most prominent peaks (the 1st is always the total maximum)
+function [peaks, thresholdUnderflow]= selectNPeaks(image, posLocmax, promThresh, peaksNum)
+% Select the N most prominent peaks (the 1st is always the total maximum)
+% - peak prominence: how the area of the valley between the 2 peaks
+% compares to the median level of the image. 0 means no valley, 1 is a valley
+% as deep as the signal median
 
-[n,m]= size(x);
-prominence= zeros(length(i),1);
-medx= mean(x(:));
-[i(:,2), i(:,1)]= ind2sub(size(x), i);
-p(1,:)= i(1,:);
-p(2,:)= [0,0];
-for ii=2:length(i)
-  xr= i(1,1):i(ii,1);
-  if isempty(xr)
-    xr= i(1,1):-1:i(ii,1);
+n= size(image, 1);
+prominence= zeros(length(posLocmax),1);
+medImg= median(image(:));         % Used as reference level for the image
+imgDiag= norm(size(image));
+[posLocmax(:,2), posLocmax(:,1)]= ind2sub(size(image), posLocmax);
+peaks= zeros(peaksNum,2) - 1;   % init null
+peaks(1,:)= posLocmax(1,:);
+thresholdUnderflow= 0;
+
+for peak=2:peaksNum
+  % Find the largest maximum that is prominent enough
+  for ii=2:length(posLocmax)
+    % Calculate the line connecting the previous peak with the candidate peak
+    xline= peaks(peak-1,1):posLocmax(ii,1);
+    if isempty(xline)                             % might have to go in reverse
+      xline= peaks(peak-1,1):-1:posLocmax(ii,1);
+    end
+    yline= round(linspace(peaks(peak-1,2),posLocmax(ii,2), length(xline)));
+    idxline= yline+n*(xline-1);    % Linear indices of between-maxima line
+    maximline= image(idxline);     % Between-maxima line
+    candidate= maximline(end);     % The candidate is by definition at the end of the line
+
+    % Find the candidate's prominence
+    valley= sum(candidate - maximline(maximline < candidate));    % = valley * length(maximline)
+    reflevel= abs(candidate - medImg) * imgDiag;                  % = (candidate-ref) * diagonal
+    prominence(ii)= valley/reflevel;
+    % Select if prominent
+    if prominence(ii) > promThresh
+      peaks(peak,:)= posLocmax(ii,:);
+      break;
+    end
   end
-  yr= round(linspace(i(1,2),i(ii,2), length(xr)));
-  ir= yr+n*(xr-1);      % Linear indices of between-maxima line
-  maximline= x(ir);     % Between-maxima line
-  
-  candidate= maximline(end);
-  % prominence of a peak: how the depth of the valley between the 2 peaks
-  % compares to the median level of the image. 0 means no valley, 1 is a valley
-  % as deep as the signal median
-  %prominence(ii)= (candidate-min(x(ir)))/(candidate-medx);
-  valley= sum(abs(maximline(maximline < candidate) - candidate));     % = valley * length(maximline)
-  reflevel= abs(medx - candidate)*sqrt(size(x,1).^2+size(x,2).^2);    % = (mean-candidate) * diagonal
-  prominence(ii)= valley/reflevel;
-  
-  if prominence(ii) > promThresh
-    p(2,:)= i(ii,:);
-    break;
+  if peaks(peak,:) == [-1,-1]                     % if peak is still null
+    [~,ii]= min(abs(prominence - promThresh));    % select the best candidate
+    peaks(peak,:)= posLocmax(ii,:);
+    thresholdUnderflow= thresholdUnderflow+1;
   end
 end
-if p(2,:)==[0,0]
-  [~,ii]= min(abs(prominence - promThresh));
-  p(2,:)= i(ii,:);
-end
-  
 end
 
 function pw= peakWidth(x,peaks)
 % Find the width of each peak
+
 pw= peaks(:,1);
 % For each peak find the area that is >10% peak height
 for p=1:size(peaks,1)

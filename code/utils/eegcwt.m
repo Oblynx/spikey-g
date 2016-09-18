@@ -21,7 +21,7 @@ scales= helperCWTTimeFreqVector(0.6,maxFrq,centfrq('morl'),1/fs,voicesPerOct);
 pfreq= mean([0.6*scales(end),maxFrq*scales(1)])./scales;
 wcf= zeros(length(scales),length(t),channels);
 % Calc wavelets
-parfor i=1:channels
+for i=1:channels
   wt= cwtft({eeg(i,:),1/fs},'wavelet','morl','scales',scales,'padmode','zpd');
   wcf(:,:,i)= real(wt.cfs);
 end
