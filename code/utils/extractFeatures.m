@@ -1,4 +1,4 @@
-function [f]= extractFeatures(eeg, fs, params, plottype)
+function [f]= extractFeatures(eeg, fs, params)
 % eeg: [channel]x[time] Part of eeg time series from which the characteristics
 % of the 2 most prominent wavelet peaks will be extracted
 
@@ -59,16 +59,17 @@ for channel= 1:channelNum
   end
 end
 
-% Highlight peaks
-if ~isempty(plottype)
+% Plot wavelets & highlight peaks
+if params.wavePlot
+  figure;
   pause on;
   for channel= 1:channelNum
-    figure;
     surf(t,pfreq,w(:,:,channel),'FaceColor','interp','FaceLighting','gouraud', 'MeshStyle','row');
     view(0,90);
-    light('Position',[0.06 50 0.06],'Style','local');
-    light('Position',[0.06 -15 0.06],'Style','local');
-    camlight headlight; material metal;
+    light('Position',[0.06 40 0.06],'Style','local');
+    light('Position',[0.06 -5 0.06],'Style','local');
+    %light('Position',[-0.04 20 0.06],'Style','local');
+    %light('Position',[0.15 20 0.06],'Style','local');
     hold on;
     for peak= 1:params.peaksNum
       p= peakLog(peak,:,channel);

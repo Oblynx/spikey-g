@@ -23,6 +23,7 @@ svmClassLabels= cell(nChannels*numSubjects*2,1);   % bul or nobul, for supervise
 % Data from experiment 1
 loadAll(dataDir);   % loads all mat files in specified directory
 
+
 % get feature vectors for EPN
 datanames= who('bul*'); % bul-nobul separation for supervised learning
 subjFiller= ones(nChannels,1);
@@ -33,11 +34,12 @@ for i=1:numSubjects
   eegs= preprocess(eegs, params.preproc);
   eegs= eegs(:,samples);
   
-  f= extractFeatures(eegs, fs, params.wave, []);
+  f= extractFeatures(eegs, fs, params.wave);
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',i*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'bul'};
 end
+
 if genparams.verbose>0, fprintf('[saveFeatures] Time for all subjects, bul: %.2fs\n', toc); end
 save(saveFile,'svmTrainingSet','svmClassLabels');
 
@@ -48,11 +50,56 @@ for i=numSubjects+1 : 2*numSubjects
   eegs= preprocess(eegs, params.preproc);
   eegs= eegs(:,samples);
   
-  f= extractFeatures(eegs, fs, params.wave, []);  % no plotting
+  f= extractFeatures(eegs, fs, params.wave);  % no plotting
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',(i-numSubjects)*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'nobul'};
 end
 save(saveFile,'svmTrainingSet','svmClassLabels');
 
+
+%{
+%% Distributed version...
+datanames= who('bul*'); % bul-nobul separation for supervised learning
+subjFiller= ones(nChannels,1);
+%localTset= zeros(nChannels, nFeatures+1, numSubjects);
+eegs= zeros(nChannels, 200, numSubjects);
+for i=1:numSubjects
+  tmpeeg= eval(datanames{i});
+  eegs(:,:,i)= tmpeeg(channels,:);
+end
+eegs= distributed(eegs);
+localTset= Composite();
+spmd
+  eegs= getLocalPart(eegs);
+  f= zeros(size(eegs,3),nFeatures);
+  for i=1:size(eegs,3);
+    eeg= eegs(:,:,i);
+    eeg= preprocess(eeg, params.preproc);
+    eeg= eeg(:,samples);
+    f(i,:)= extractFeatures(eeg, fs,params.wave);
+  end
+  localTset= [f,channels'];
+end
+localTset= localTset{:};
+svmTrainingSet(1:nChannels*numSubjects, :)= [localTset, reshape(subjFiller*(1:numSubjects),[],1)];
+svmClassLabels(1:nChannels*numSubjects)= {'nobul'};
+
+datanames= who('nobul*'); % bul-nobul separation for supervised learning
+for i=1:numSubjects
+  tmpeeg= eval(datanames{i});
+  eegs(:,:,i)= tmpeeg(channels,:);
+end
+eegs= distributed(eegs); localTset= distributed(localTset);
+spmd
+  eegs= preprocess(eegs, params.preproc);
+  eegs= eegs(:,samples);
+  f= extractFeatures(eegs, fs,params.wave);
+  localTset= [f,channels'];
+end
+localTset= gather(localTset); eegs= gather(eegs);
+svmTrainingSet(nChannels*numSubjects+1:end, :)= [localTset, reshape(subjFiller*(1:numSubjects),[],1)];
+svmClassLabels(nChannels*numSubjects+1:end)= {'nobul'};
+save(saveFile,'svmTrainingSet','svmClassLabels');
+%}
 end
