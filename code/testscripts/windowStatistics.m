@@ -7,7 +7,7 @@ eegdata_bul= bul_Averageptes07; eegdata_nbul= nobul_Averageptes07;
 eegdata_select= eegdata_bul;
 
 % Parameters + padding, upsampling
-upsampling= 8;    % upsampling: Upsample to this many times the original fs
+upsampling= 8;     % upsampling: Upsample to this many times the original fs
 fs= 250*upsampling; t_w=0.02;  % t_w: window length in sec
 orders= 5;         % orders: max statistics order (<=8)
 
