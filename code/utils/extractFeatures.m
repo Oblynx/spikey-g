@@ -15,8 +15,7 @@ else
   lastfig= 0;
 end
 
-t= (0:size(eeg,2))/fs;
-[w,pfreq]= eegcwt(eeg, fs, params.voicesPerOct, params.waveMaxFrq, plottype);
+[w,pfreq,~,t]= eegcwt(eeg, fs, params.voicesPerOct, params.waveMaxFrq, params.padmode, params.mwave, []);
 % Normalized energy for each coefficient
 for channel= 1:channelNum
   if sum(abs(eeg(channel,:))) > 1E-3
@@ -30,7 +29,6 @@ end
 
 f= zeros(channelNum, 3*params.peaksNum);
 peakLog= zeros(params.peaksNum, 2, channelNum);
-prominenceUnderflow= 0;
 for channel= 1:channelNum
   wvt= w(:,:,channel);
   if ~isnan(wvt(1,1))
@@ -46,8 +44,7 @@ for channel= 1:channelNum
     iM= iM(idxSorted);
     
     % Select the most prominent peaks
-    [peaks, underfl]= selectNPeaks(wvtSmooth,iM, params.prominenceThreshold, params.peaksNum);
-    prominenceUnderflow= prominenceUnderflow+underfl;
+    peaks= selectNPeaks(wvtSmooth,iM, params.peaksNum);
     pwidth= peakWidth(wvtSmooth, peaks);
     
     for peak=1:params.peaksNum
@@ -60,66 +57,27 @@ for channel= 1:channelNum
     f(channel,:)= NaN;
   end
 end
-if prominenceUnderflow > params.prominenceUnderflowWarningThreshold
-  fprintf('[extractFeatures]: WARNING! prominence underflow=%d\n', prominenceUnderflow);
-end
 
 % Highlight peaks
 if ~isempty(plottype)
+  pause on;
   for channel= 1:channelNum
-    figure(lastfig + channel);
+    figure;
+    surf(t,pfreq,w(:,:,channel),'FaceColor','interp','FaceLighting','gouraud', 'MeshStyle','row');
+    view(0,90);
+    light('Position',[0.06 50 0.06],'Style','local');
+    light('Position',[0.06 -15 0.06],'Style','local');
+    camlight headlight; material metal;
     hold on;
     for peak= 1:params.peaksNum
-      plot(t(peakLog(peak,1,channel)), size(w,1) - peakLog(peak,2,channel), 'rx');
+      p= peakLog(peak,:,channel);
+      %plot(t(peakLog(peak,1,channel)), size(w,1) - peakLog(peak,2,channel), 'rx');
+      plot3(t(p(1)), pfreq(p(2)), w(p(2),p(1),channel)*1.01, 'kh', 'MarkerSize',8, 'MarkerFaceColor','r');
     end
     hold off;
+    pause;
   end
-end
-end
-
-function [peaks, thresholdUnderflow]= selectNPeaks(image, posLocmax, promThresh, peaksNum)
-% Select the N most prominent peaks (the 1st is always the total maximum)
-% - peak prominence: how the area of the valley between the 2 peaks
-% compares to the median level of the image. 0 means no valley, 1 is a valley
-% as deep as the signal median
-
-n= size(image, 1);
-prominence= zeros(length(posLocmax),1);
-medImg= median(image(:));         % Used as reference level for the image
-imgDiag= norm(size(image));
-[posLocmax(:,2), posLocmax(:,1)]= ind2sub(size(image), posLocmax);
-peaks= zeros(peaksNum,2) - 1;   % init null
-peaks(1,:)= posLocmax(1,:);
-thresholdUnderflow= 0;
-
-for peak=2:peaksNum
-  % Find the largest maximum that is prominent enough
-  for ii=2:length(posLocmax)
-    % Calculate the line connecting the previous peak with the candidate peak
-    xline= peaks(peak-1,1):posLocmax(ii,1);
-    if isempty(xline)                             % might have to go in reverse
-      xline= peaks(peak-1,1):-1:posLocmax(ii,1);
-    end
-    yline= round(linspace(peaks(peak-1,2),posLocmax(ii,2), length(xline)));
-    idxline= yline+n*(xline-1);    % Linear indices of between-maxima line
-    maximline= image(idxline);     % Between-maxima line
-    candidate= maximline(end);     % The candidate is by definition at the end of the line
-
-    % Find the candidate's prominence
-    valley= sum(candidate - maximline(maximline < candidate));    % = valley * length(maximline)
-    reflevel= abs(candidate - medImg) * imgDiag;                  % = (candidate-ref) * diagonal
-    prominence(ii)= valley/reflevel;
-    % Select if prominent
-    if prominence(ii) > promThresh
-      peaks(peak,:)= posLocmax(ii,:);
-      break;
-    end
-  end
-  if peaks(peak,:) == [-1,-1]                     % if peak is still null
-    [~,ii]= min(abs(prominence - promThresh));    % select the best candidate
-    peaks(peak,:)= posLocmax(ii,:);
-    thresholdUnderflow= thresholdUnderflow+1;
-  end
+  pause off;
 end
 end
 
