@@ -32,15 +32,15 @@ if params.predictor.predRanking
     histObjBul.BinWidth= bw; histObjNobul.BinWidth= bw;
     histObjBul.BinEdges= bedge; histObjNobul.BinEdges= bedge;
     % Get histogram values
-    histBul{pred}= histObjBul.Values;
-    histNobul{pred}= histObjNobul.Values;
+    histBul{pred}= histObjBul.Values +eps;
+    histNobul{pred}= histObjNobul.Values +eps;
     histX{pred}= bedge(1:end-1) + bw/2;     % bin centers
   end
   hold off; close;
 
   % Calculate discriminative ability of each predictor
   for pred= 1:genparams.features
-    discrim(pred)= kldiv(histX{pred}, histBul{pred}, histNobul{pred}, 'sym');
+    discrim(pred)= pdist([histBul{pred};histNobul{pred}],eval(['@',params.predictor.histDist]));
   end
   % Rank predictors according to their discriminative ability
   [~,rankedPred]= sort(discrim, 'descend');
