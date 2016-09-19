@@ -15,7 +15,8 @@ else
   lastfig= 0;
 end
 
-[w,pfreq,~,t]= eegcwt(eeg, fs, params.voicesPerOct, params.waveMaxFrq, params.padmode, params.mwave, []);
+[w,pfreq,~,t]= eegcwt(eeg, fs, params.voicesPerOct, params.waveFrq, params.padmode, ...
+                      params.mwave, params.resamplingFactor, []);
 % Normalized energy for each coefficient
 for channel= 1:channelNum
   if sum(abs(eeg(channel,:))) > 1E-3

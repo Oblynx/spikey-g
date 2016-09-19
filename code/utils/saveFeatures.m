@@ -33,7 +33,7 @@ for i=1:numSubjects
   eegs= preprocess(eegs, params.preproc);
   eegs= eegs(:,samples);
   
-  f= extractFeatures(eegs, fs, params.wave, []);  % no plotting
+  f= extractFeatures(eegs, fs, params.wave, []);
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',i*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'bul'};
