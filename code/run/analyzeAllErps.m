@@ -3,7 +3,7 @@ load('data/erp_time_channels.mat');
 
 %% Parameters
 erps= {'EPN','N170','P300','LPP'};
-dir= 'data/PTES_2/matfilesT';
+dir= 'data/eeg_experiment/matfilesT';
 savefile= 'data/results/features/tmp/svmTrainingSet_';
 tresultsfile= 'data/results/svm/tmp/trainResults_';
 
@@ -37,7 +37,7 @@ parameters.class.svm= struct( ...
 );
 parameters.gen= struct( ...
   'verbose',1, ...                          % 0= just errors, 1= info, 2= +parameters
-  'ErpTimeExtension',0.4, ...                   % Extend ERP time duration by this amount
+  'erpTimeExtension',0.4, ...                   % Extend ERP time duration by this amount
   'features',3*parameters.feature.wave.peaksNum ...  % READ ONLY!
 );
 
@@ -62,11 +62,6 @@ if extractFeatures
     chanName= who(['channels_',erps{erp}]);
     timeLimits= eval(tlimName{1});
     channels= eval(chanName{1});
-    % Extend ERP time limits
-    timeLimits(1)= timeLimits(1) - parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
-    timeLimits(2)= timeLimits(2) + parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
-    if timeLimits(1) < 0, timeLimits(1)= 0; end
-    if timeLimits(2) > 800, timeLimits(2)= 800; end
 
     % Save features using these properties
     savefile1= [savefile,'T1',erps{erp},'.mat'];

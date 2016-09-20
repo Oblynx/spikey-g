@@ -1,0 +1,2 @@
+Analysis output data. Since the goal is to define a classification model, the data here are mostly kept as reference.
+The actual result is the classification errors each model incurs, which will give the insight to report our findings.

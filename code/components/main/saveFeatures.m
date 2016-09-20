@@ -3,7 +3,16 @@ function saveFeatures(dataDir, saveFile, timeLimits, channels, params, genparams
 % May become arguments
 fs = 250;
 numSubjects= 18;
-nFeatures= 3*params.wave.peaksNum;
+nFeatures= genparams.features;
+
+%% Extend ERP time limits
+if genparams.erpTimeExtension > 0
+  timeLimits(1)= timeLimits(1) - genparams.erpTimeExtension/2*(timeLimits(2)-timeLimits(1));
+  timeLimits(2)= timeLimits(2) + genparams.erpTimeExtension/2*(timeLimits(2)-timeLimits(1));
+  if timeLimits(1) < 0, timeLimits(1)= 0; end
+  if timeLimits(2) > 800, timeLimits(2)= 800; end
+end
+
 
 %% Set up variables
 % conversion of the times above to sample number. Sample no1 corresponds to

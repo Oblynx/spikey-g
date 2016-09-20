@@ -2,7 +2,7 @@ clear; close all;
 load('data/erp_time_channels.mat');
 
 %% Parameters
-dir= 'data/PTES_2/matfilesT1/';                                 % Data directory
+dir= 'data/eeg_experiment/matfilesT1/';                         % Data directory
 savefile= 'data/results/features/tmp/svmTrainingSet_tmp.mat';   % Where to save features
 tresultsfile= 'data/results/svm/tmp/trainResults_tmp.mat';      % Where to save SVM results
 
@@ -36,7 +36,7 @@ parameters.class.svm= struct( ...
 );
 parameters.gen= struct( ...
   'verbose',1, ...                          % 0= just errors, 1= info, 2= +parameters
-  'ErpTimeExtension',0.4, ...                   % Extend ERP time duration by this amount
+  'erpTimeExtension',0.4, ...                   % Extend ERP time duration by this amount
   'features',3*parameters.feature.wave.peaksNum ...  % READ ONLY!
 );
 
@@ -47,12 +47,6 @@ extractFeatures= true;
 %channels= [108,115:117,124:126,137:139,149:151,159];
 timeLimits= timeLims_EPN;
 channels= channels_EPN;
-
-%% Extend ERP time limits
-timeLimits(1)= timeLimits(1) - parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
-timeLimits(2)= timeLimits(2) + parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
-if timeLimits(1) < 0, timeLimits(1)= 0; end
-if timeLimits(2) > 800, timeLimits(2)= 800; end
 
 %% Show parameters?
 if parameters.gen.verbose>=2
