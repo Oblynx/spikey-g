@@ -7,38 +7,54 @@ dir= 'data/PTES_2/matfilesT';
 savefile= 'data/results/features/tmp/svmTrainingSet_';
 tresultsfile= 'data/results/svm/tmp/trainResults_';
 
-parameters= struct('feature',[], 'class',[]);
-parameters.feature= struct('preproc',[], 'wave',[]);
-parameters.class= struct('predictor',[], 'func',[]);
-
 parameters.feature.preproc= struct( ...
   'channelICA',false, ...
   'channelICAfilt',false, ...
   'filtFrq',[84,92] ...
 );
 parameters.feature.wave= struct( ...
-  'waveMaxFrq',90, ...
-  'voicesPerOct',32, ...
-  'waveSmoothStd',2, ...
-  'prominenceThreshold',0.5 ...
+  'resamplingFactor',1, ...     % Resample eegs before transform (1 does nothing)
+  'waveFrq',[4.5,30], ...       % Transform frequency range
+  'voicesPerOct',16, ...
+  'padmode','zpd', ...
+  'mwave', 'morl', ...          % Mother wavelet; must be either 'morl' | 'mexh'
+  'waveSmoothStd',0, ...        % Smooth before detecting peaks; unnecessary
+  'peaksNum',4, ...
+  'wavePlot',false ...
 );
 parameters.class.predictor= struct( ...
-  'predICA',true, ...
-  'predRanking',true, ...
-  'numPred',3, ...
-  'selectedPredictors',1:6 ...
+  'predICA',false, ...          % Perform ICA on predictors
+  'predRanking',true, ...       % Rank predictors according to their discriminative ability (via histogram distance)
+  'histDist','bhattacharyya', ...     % Histogram distance metric (select any from the 'hist_dist' folder
+  'rankSelect',1:4, ...               % If ranking, how many best predictors to keep
+  'selectedPredictors',[1,2,4,5] ...  % If ~ranking, which predictors to use
 );
-parameters.class.func= struct( ...
-  'svmPlotGraphs',false, ...
-	'singlePredictorPerformance',true, ...
-	'singlePredictorPerformThreshold',48 ...
+parameters.class.svm= struct( ...
+  'kernelFunc','rbf', ...
+  'svmPlotGraphs',false, ...              % Plot various descriptive graphs
+	'singlePredictorPerformance',false, ... % Assess each predictor independently
+	'singlePredictorPerformThreshold',44 ...% Show result only if it exceeds this threshold
+);
+parameters.gen= struct( ...
+  'verbose',1, ...                          % 0= just errors, 1= info, 2= +parameters
+  'ErpTimeExtension',0.4, ...                   % Extend ERP time duration by this amount
+  'features',3*parameters.feature.wave.peaksNum ...  % READ ONLY!
 );
 
 genderAnalysis= false;
 extractFeatures= true;
 
+%% Show parameters?
+if parameters.gen.verbose>=2
+  fprintf('\tParameters:\n\n');
+  disp(parameters.feature.preproc)
+  disp(parameters.feature.wave)
+  disp(parameters.class.predictor)
+  disp(parameters.class.svm)
+  disp(parameters.gen)
+end
+
 %% Extract features
-parameters
 if extractFeatures
   fprintf('--> Extracting features...\n');
   for erp= 1:length(erps)
@@ -46,12 +62,17 @@ if extractFeatures
     chanName= who(['channels_',erps{erp}]);
     timeLimits= eval(tlimName{1});
     channels= eval(chanName{1});
+    % Extend ERP time limits
+    timeLimits(1)= timeLimits(1) - parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
+    timeLimits(2)= timeLimits(2) + parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
+    if timeLimits(1) < 0, timeLimits(1)= 0; end
+    if timeLimits(2) > 800, timeLimits(2)= 800; end
 
     % Save features using these properties
     savefile1= [savefile,'T1',erps{erp},'.mat'];
     savefile2= [savefile,'T2',erps{erp},'.mat'];
-    saveFeatures([dir,'1/'], savefile1, timeLimits,channels, parameters.feature);
-    saveFeatures([dir,'2/'], savefile2, timeLimits,channels, parameters.feature);
+    saveFeatures([dir,'1/'], savefile1, timeLimits,channels, parameters.feature, parameters.gen);
+    saveFeatures([dir,'2/'], savefile2, timeLimits,channels, parameters.feature, parameters.gen);
   end
 else
   fprintf('--> Feature extraction SKIPPED\n');
@@ -67,11 +88,11 @@ for erp= 1:length(erps)
   
   if ~genderAnalysis
     fprintf('\n-> Training model: T1 %s both\n', erps{erp});
-    [model, err, conf]= trainSvm(savefile1, parameters.class);
+    [model, err, conf]= trainSvm(savefile1, parameters.class, parameters.gen);
     save(tresultsfile1, 'model','err','conf');
 
     fprintf('\n-> Training model: T2 %s both\n', erps{erp});
-    [model, err, conf]= trainSvm(savefile2, parameters.class);
+    [model, err, conf]= trainSvm(savefile2, parameters.class, parameters.gen);
     save(tresultsfile2, 'model','err','conf');
   else
     [savefile1_men, savefile1_women]= splitMenWomen(savefile1, 'data/menWomen.mat');
@@ -82,19 +103,19 @@ for erp= 1:length(erps)
     tresultsfile2_women= [tresultsfile2(1:end-4),'_women.mat'];
     
     fprintf('\n-> Training model: T1 %s MEN\n', erps{erp});
-    [model, err, conf]= trainSvm(savefile1_men, parameters.class);
+    [model, err, conf]= trainSvm(savefile1_men, parameters.class, parameters.gen);
     save(tresultsfile1_men, 'model','err','conf');
     
     fprintf('\n-> Training model: T1 %s WOMEN\n', erps{erp});
-    [model, err, conf]= trainSvm(savefile1_women, parameters.class);
+    [model, err, conf]= trainSvm(savefile1_women, parameters.class, parameters.gen);
     save(tresultsfile1_women, 'model','err','conf');
     
     fprintf('\n-> Training model: T2 %s MEN\n', erps{erp});
-    [model, err, conf]= trainSvm(savefile2_men, parameters.class);
+    [model, err, conf]= trainSvm(savefile2_men, parameters.class, parameters.gen);
     save(tresultsfile2_men, 'model','err','conf');
     
     fprintf('\n-> Training model: T2 %s WOMEN\n', erps{erp});
-    [model, err, conf]= trainSvm(savefile2_women, parameters.class);
+    [model, err, conf]= trainSvm(savefile2_women, parameters.class, parameters.gen);
     save(tresultsfile2_women, 'model','err','conf');
   end
 end
