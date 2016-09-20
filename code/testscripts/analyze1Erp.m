@@ -28,7 +28,8 @@ parameters.class.predictor= struct( ...
   'rankSelect',1:4, ...               % If ranking, how many best predictors to keep
   'selectedPredictors',[1,2,4,5] ...  % If ~ranking, which predictors to use
 );
-parameters.class.func= struct( ...
+parameters.class.svm= struct( ...
+  'kernelFunc','rbf', ...
   'svmPlotGraphs',false, ...              % Plot various descriptive graphs
 	'singlePredictorPerformance',false, ... % Assess each predictor independently
 	'singlePredictorPerformThreshold',44 ...% Show result only if it exceeds this threshold
@@ -45,7 +46,7 @@ extractFeatures= true;
 %timeLimits= [30,150]; % start-end (milliseconds)
 %channels= [108,115:117,124:126,137:139,149:151,159];
 timeLimits= timeLims_EPN;
-channels= channels_ext_EPN;
+channels= channels_EPN;
 
 %% Extend ERP time limits
 timeLimits(1)= timeLimits(1) - parameters.gen.ErpTimeExtension/2*(timeLimits(2)-timeLimits(1));
@@ -59,7 +60,8 @@ if parameters.gen.verbose>=2
   disp(parameters.feature.preproc)
   disp(parameters.feature.wave)
   disp(parameters.class.predictor)
-  disp(parameters.class.func)
+  disp(parameters.class.svm)
+  disp(parameters.gen)
 end
 %% Extract features
 if extractFeatures

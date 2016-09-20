@@ -1,4 +1,4 @@
-function [svmModel, error, confusMat]= trainSvm(featureFile, params, genparams)
+function [svmModel, classError, confusMat]= trainSvm(featureFile, params, genparams)
 % Loads svm training set & class labels from "featureFile" and trains SVM model
 
 load(featureFile);
@@ -56,26 +56,43 @@ if genparams.verbose>=1 && ~params.predictor.predICA;
 end
 
 %% Plot training set?
-if params.func.svmPlotGraphs
+if params.svm.svmPlotGraphs
   svmPlotGraphs(fullTset,svmClassLabels,classCut,R);
 end
 %% Train SVM
-svmModel= fitcsvm(svmTrainingSet, svmClassLabels, 'Standardize',true, ...
-                   'KernelScale','auto','KernelFunc','rbf');
+% Setup SVM training function
+trainSvm_ready= 0;
+switch params.svm.kernelFunc
+  case 'linear'
+    trainSvm_ready= @(tset) fitcsvm(tset, svmClassLabels, 'Standardize',true, ...
+                              'KernelFunc','linear');
+  case {'rbf','gaussian'}
+    trainSvm_ready= @(tset) fitcsvm(tset, svmClassLabels, 'Standardize',true, ...
+                              'KernelScale','auto','KernelFunc','rbf');
+  case 'polynomial'
+    trainSvm_ready= @(tset) fitcsvm(tset, svmClassLabels, 'Standardize',true, ...
+                              'KernelScale','auto','KernelFunc','polynomial', ...
+                              'PolynomialOrder',params.svm.kernelPolynomOrder);
+  otherwise
+    error('[trainSvm]: Unexpected kernel function!');
+end
+
+% Train SVM
+svmModel= trainSvm_ready(svmTrainingSet);
 
 % Calculate classification error
 %tic;
 for i=1:3
   rng(i); cvSvmModel= svmModel.crossval('kfold',4);
-  error(i)= 100*cvSvmModel.kfoldLoss;
+  classError(i)= 100*cvSvmModel.kfoldLoss;
 end
 %fprintf('Cross Validation time: %.3f\n', toc);
-error= mean(error);     % Mean of 3 independent 4-fold errors (12 folds total)
+classError= mean(classError);     % Mean of 3 independent 4-fold errors (12 folds total)
 svmModel= cvSvmModel;
-confusMat= confusionMatrix(svmModel, svmClassLabels, params.func.svmPlotGraphs);
+confusMat= confusionMatrix(svmModel, svmClassLabels, params.svm.svmPlotGraphs);
 
 % Show classification error
-fprintf(' - Classification error: %.1f%% \n', error);
+fprintf(' - Classification error: %.1f%% \n', classError);
 if genparams.verbose>=1
   fprintf('Confusion matrix:\n');
   format bank;
@@ -84,21 +101,20 @@ if genparams.verbose>=1
 end
 
 %% Try each predictor alone
-if params.func.singlePredictorPerformance
+if params.svm.singlePredictorPerformance
   k= 1;
   predNames= {'val','frq','wid'};
   selPreds= nchoosek(1:genparams.features,k);
   fprintf('\n-> Classification errors for using only %d predictor(s)\n', k);
   for i= 1:size(selPreds,1)
     trainingSubset= fullTset(:,selPreds(i,:));
-    svmModel= fitcsvm(trainingSubset, svmClassLabels, 'Standardize',true, ...
-                       'KernelScale','auto','KernelFunc','rbf');
+    svmModel= trainSvm_ready(trainingSubset);
     for j=1:3
       rng(j); cvSvmModel= svmModel.crossval('kfold',4);
-      error(j)= 100*cvSvmModel.kfoldLoss;
+      classError(j)= 100*cvSvmModel.kfoldLoss;
     end
-    error= mean(error);
-    if error < params.func.singlePredictorPerformThreshold
+    classError= mean(classError);
+    if classError < params.svm.singlePredictorPerformThreshold
       % Show classification error
       kind= mod(selPreds(i,:)-1,3) +1;
       peak= floor((selPreds(i,:)-1) ./ 3) +1;
@@ -106,7 +122,7 @@ if params.func.singlePredictorPerformance
       for pred=1:k
         names= [names, predNames{kind(pred)}, int2str(peak(pred)), ' '];
       end
-      fprintf('%d: %s= %f\n', i,names,error);
+      fprintf('%d: %s= %f\n', i,names,classError);
     end
   end
 end
