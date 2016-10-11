@@ -66,7 +66,7 @@ if params.wavePlot
   pause on;
   for channel= 1:channelNum
     surf(t,pfreq,w(:,:,channel),'FaceColor','interp','FaceLighting','gouraud', 'MeshStyle','row');
-    view(0,90);
+    view(-20,120); material dull;
     light('Position',[0.06 40 0.06],'Style','local');
     light('Position',[0.06 -5 0.06],'Style','local');
     %light('Position',[-0.04 20 0.06],'Style','local');

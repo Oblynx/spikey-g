@@ -61,7 +61,7 @@ end
 
 %% Plot training set?
 if params.svm.svmPlotGraphs
-  svmPlotGraphs(fullTset,svmClassLabels,classCut,R);
+  svmPlotGraphs(fullTset,svmClassLabels,R);
 end
 %% Train SVM
 % Setup SVM training function
