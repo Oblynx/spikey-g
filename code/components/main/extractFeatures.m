@@ -51,7 +51,7 @@ for channel= 1:channelNum
     
     for peak=1:params.peaksNum
       f(channel, 3*(peak-1)+1 : 3*peak)= ...
-          [wvt(peaks(peak,2), peaks(peak,1)), pfreq(peaks(peak,2)), pwidth(peak)];
+          [wvt(peaks(peak,2), peaks(peak,1)), log2(pfreq(peaks(peak,2))), pwidth(peak)];
     end
     
     peakLog(:,:,channel)= peaks;
