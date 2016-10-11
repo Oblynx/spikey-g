@@ -45,6 +45,10 @@ if params.predictor.predRanking
   % Rank predictors according to their discriminative ability
   [~,rankedPred]= sort(discrim, 'descend');
   svmTrainingSet= fullTset(:, rankedPred(params.predictor.rankSelect));
+  if genparams.verbose>=1
+    fprintf('Best predictors: ');
+    disp(rankedPred(params.predictor.rankSelect))
+  end
 else
   % Else select predictors manually
   svmTrainingSet= fullTset(:, params.predictor.selectedPredictors);

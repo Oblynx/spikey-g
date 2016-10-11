@@ -41,9 +41,8 @@ for i=1:numSubjects
   eegs= eval(datanames{i}); % get all channels of current subject
   eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
   eegs= preprocess(eegs, params.preproc);
-  eegs= eegs(:,samples);
   
-  f= extractFeatures(eegs, fs, params.wave);
+  f= extractFeatures(eegs, samples, fs, params.wave);
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',i*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'bul'};
@@ -57,9 +56,8 @@ for i=numSubjects+1 : 2*numSubjects
   eegs = eval(datanames{i-numSubjects});
   eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
   eegs= preprocess(eegs, params.preproc);
-  eegs= eegs(:,samples);
   
-  f= extractFeatures(eegs, fs, params.wave);  % no plotting
+  f= extractFeatures(eegs, samples, fs, params.wave);  % no plotting
   svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
                                     [f,channels',(i-numSubjects)*subjFiller];
   svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'nobul'};

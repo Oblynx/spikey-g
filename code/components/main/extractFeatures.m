@@ -1,4 +1,4 @@
-function [f]= extractFeatures(eeg, fs, params)
+function [f]= extractFeatures(eeg, tWin, fs, params)
 % eeg: [channel]x[time] Part of eeg time series from which the characteristics
 % of the 2 most prominent wavelet peaks will be extracted
 
@@ -17,6 +17,7 @@ end
 
 [w,pfreq,~,t]= eegcwt(eeg, fs, params.voicesPerOct, params.waveFrq, params.padmode, ...
                       params.mwave, params.resamplingFactor, []);
+w= w(:,tWin,:);
 % Normalized energy for each coefficient
 for channel= 1:channelNum
   if sum(abs(eeg(channel,:))) > 1E-3
