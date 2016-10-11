@@ -11,4 +11,3 @@ if ~isnan(eegs)
     x= filter(ica_filt(params.filtFrq),x); eegs= x';
   end
 end
-%eegs= mean(eegs,1);

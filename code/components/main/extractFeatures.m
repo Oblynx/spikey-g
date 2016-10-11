@@ -7,7 +7,6 @@ if size(eeg,1) == 257
   eeg= eeg(1:256,:);
 end
 
-channelNum= size(eeg,1);
 lastfig= get(groot,'CurrentFigure');
 if ~isempty(lastfig)
   lastfig= lastfig.Number;
@@ -17,7 +16,12 @@ end
 
 [w,pfreq,~,t]= eegcwt(eeg, fs, params.voicesPerOct, params.waveFrq, params.padmode, ...
                       params.mwave, params.resamplingFactor, []);
+
+  %w= mean(w,3); % #!!!!@  DANGER  @!!!!# %
+
 w= w(:,tWin,:); t= t(tWin);
+
+channelNum= size(w,3);
 % Normalized energy for each coefficient
 for channel= 1:channelNum
   if sum(abs(eeg(channel,:))) > 1E-3
@@ -66,6 +70,7 @@ if params.wavePlot
   pause on;
   for channel= 1:channelNum
     surf(t,pfreq,w(:,:,channel),'FaceColor','interp','FaceLighting','gouraud', 'MeshStyle','row');
+    xlabel('t(s)'); ylabel('f(Hz)'); title('Wavelet energy');
     view(-20,120); material dull;
     light('Position',[0.06 40 0.06],'Style','local');
     light('Position',[0.06 -5 0.06],'Style','local');
