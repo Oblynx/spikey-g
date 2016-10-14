@@ -34,6 +34,7 @@ for peak=2:peaksNum
 
       prominence(ii)= candidate - min(maximline);
     end
+    
   end
   % Simply go through all local maxima and select the most prominent
   [~,ii]= max(prominence);

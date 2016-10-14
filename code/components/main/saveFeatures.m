@@ -19,7 +19,6 @@ end
 % t=0ms. The interval between two samples is fs/1000 ms.
 samples(1)= floor(timeLimits(1)*fs/1000)+1;  % +1 so that if time=0, index=1->first sample
 samples(2) = ceil(timeLimits(2)*fs/1000);
-samples= samples(1):samples(2);
 
 % Number of selected channels for each ERP
 nChannels= length(channels);

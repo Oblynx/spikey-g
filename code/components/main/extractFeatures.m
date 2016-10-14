@@ -14,12 +14,10 @@ else
   lastfig= 0;
 end
 
-[w,pfreq,~,t]= eegcwt(eeg, fs, params.voicesPerOct, params.waveFrq, params.padmode, ...
+[w,pfreq,~,t]= eegcwt(eeg, fs, tWin, params.voicesPerOct, params.waveFrq, params.padmode, ...
                       params.mwave, params.resamplingFactor, []);
 
   %w= mean(w,3); % #!!!!@  DANGER  @!!!!# %
-
-w= w(:,tWin,:); t= t(tWin);
 
 channelNum= size(w,3);
 % Normalized energy for each coefficient

@@ -1,4 +1,4 @@
-function [wcf, pfreq, scales, t] = eegcwt(eeg, fs, voicesPerOct, frqLim, padmode, mwave, resamplingFactor, plottype)
+function [wcf, pfreq, scales, t] = eegcwt(eeg, fs, tWin, voicesPerOct, frqLim, padmode, mwave, resamplingFactor, plottype)
 % [wcf, pfreq, scales] = eegcwt(eeg, fs, voicesPerOct, maxFrq, plottype)
 %   Calculate and show the cwt for each eeg channel. The mother wavelet has to
 %   be changed inside the function, because their names are incompatible between
@@ -20,8 +20,10 @@ function [wcf, pfreq, scales, t] = eegcwt(eeg, fs, voicesPerOct, frqLim, padmode
 if resamplingFactor > 1
   eeg= resample(eeg',resamplingFactor,1); eeg= eeg';
   fs= fs*resamplingFactor;
+  tWin= tWin*resamplingFactor;
 end
 
+tWin= tWin(1):tWin(2);
 % Wavelet params
 channels= size(eeg,1);
 t= (0:size(eeg,2)-1)/fs;
@@ -35,6 +37,9 @@ for i=1:channels
   wt= cwtft({eeg(i,:),1/fs},'wavelet',mwave,'scales',scales,'padmode',padmode);
   wcf(:,:,i)= real(wt.cfs);
 end
+wcf= wcf(:,tWin,:);
+t= t(tWin);
+
 % Plot
 if ~isempty(plottype)
   for i=1:channels
