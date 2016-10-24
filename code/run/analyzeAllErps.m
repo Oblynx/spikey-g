@@ -14,7 +14,7 @@ parameters.feature.preproc= struct( ...
 );
 parameters.feature.wave= struct( ...
   'resamplingFactor',1, ...     % Resample eegs before transform (1 does nothing)
-  'waveFrq',[4.4,30], ...       % Transform frequency range
+  'waveFrq',[4.0,30], ...       % Transform frequency range
   'voicesPerOct',32, ...
   'padmode','sym', ...
   'mwave', 'morl', ...          % Mother wavelet; must be either 'morl' | 'mexh'
@@ -41,7 +41,7 @@ parameters.gen= struct( ...
   'features',3*parameters.feature.wave.peaksNum ...  % READ ONLY!
 );
 
-genderAnalysis= false;
+genderAnalysis= true;
 extractFeatures= true;
 
 %% Show parameters?

@@ -24,8 +24,8 @@ samples(2) = ceil(timeLimits(2)*fs/1000);
 nChannels= length(channels);
 
 % Test 1 data (1 feature matrix for each ERP)
-svmTrainingSet= zeros(nChannels*numSubjects*2,nFeatures+2);  %[channel]*[subject]*[class]=9216
-svmClassLabels= cell(nChannels*numSubjects*2,1);   % bul or nobul, for supervised learning
+trainingSetB= zeros(nChannels*numSubjects,nFeatures+1);  %[channel]*[subject]*[class]=9216
+trainingSetNB= trainingSetB;
 
 %% Load all data and prepare the training set 
 % Data from experiment 1
@@ -34,33 +34,40 @@ loadAll(dataDir);   % loads all mat files in specified directory
 
 % get feature vectors for EPN
 datanames= who('bul*'); % bul-nobul separation for supervised learning
-subjFiller= ones(nChannels,1);
 if genparams.verbose>0, tic; end
-for i=1:numSubjects
+count= 0;
+for i= [1:9,12:18]
   eegs= eval(datanames{i}); % get all channels of current subject
   eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
   eegs= preprocess(eegs, params.preproc);
   
   f= extractFeatures(eegs, samples, fs, params.wave);
-  svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
-                                    [f,channels',i*subjFiller];
-  svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'bul'};
+  trainingSetB(count+1 : count+size(f,1), :)= [f,repmat(i,size(f,1),1)];
+  count= count+size(f,1);
 end
+trainingSetB= trainingSetB(1:count,:);
 
 if genparams.verbose>0, fprintf('[saveFeatures] Time for all subjects, bul: %.2fs\n', toc); end
-save(saveFile,'svmTrainingSet','svmClassLabels');
 
 datanames= who('nobul*');
-for i=numSubjects+1 : 2*numSubjects
-  eegs = eval(datanames{i-numSubjects});
+
+count= 0;
+for i= [1:9,12:18]
+  eegs= eval(datanames{i}); % get all channels of current subject
   eegs= eegs(channels,:);  % get only the period of time corresponding to the current ERP
   eegs= preprocess(eegs, params.preproc);
   
-  f= extractFeatures(eegs, samples, fs, params.wave);  % no plotting
-  svmTrainingSet(nChannels*(i-1)+1 : nChannels*i, :)= ...
-                                    [f,channels',(i-numSubjects)*subjFiller];
-  svmClassLabels(nChannels*(i-1)+1 : nChannels*i)= {'nobul'};
+  f= extractFeatures(eegs, samples, fs, params.wave);
+  trainingSetNB(count+1 : count+size(f,1), :)= [f,repmat(i,size(f,1),1)];
+  count= count+size(f,1);
 end
+trainingSetNB= trainingSetNB(1:count,:);
+
+svmTrainingSet= [trainingSetB; trainingSetNB];
+svmClassLabels= cell(size(svmTrainingSet,1),1);           % bul or nobul, for supervised learning
+svmClassLabels(1 : size(trainingSetB,1))= {'bul'};
+svmClassLabels(size(trainingSetB,1)+1 : end)= {'nobul'};
+
 save(saveFile,'svmTrainingSet','svmClassLabels');
 
 
