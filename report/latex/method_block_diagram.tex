@@ -1,0 +1,20 @@
+% Library for block diagrams and signal flow graphs
+% Author: Matthias Hotz
+\documentclass{article}
+\usepackage{tikz}
+\usetikzlibrary{dsp,chains}
+
+% set up externalization
+\usetikzlibrary{external}
+\tikzset{external/system call={latex \tikzexternalcheckshellescape -halt-on-error
+-interaction=batchmode -jobname "\image" "\texsource";
+dvips -o "\image".ps "\image".dvi;
+ps2eps "\image.ps"}}
+\tikzexternalize
+
+% compile with `latex --shell-escape `
+
+\begin{document}
+\begin{tikzpicture}
+\end{tikzpicture}
+\end{document}
