@@ -1,4 +1,4 @@
-function cfm= confusionMatrix(svm, truth, plot)
+function cfm= confusionMatrix(svm, truth, plot, name)
 % cfm= confusionMatrix(svm, truth, plot)
 % Calculates the confusion matrix (100*[truePos,falseNeg;falsePos,trueNeg]/total)
 % and displays the results graphically
@@ -26,7 +26,7 @@ if plot
   truth= [~truth, truth]'; truth= ~truth;
   pred= [~pred, pred]'; pred= ~pred;
   figure;
-  plotconfusion(truth,pred);  % 1: bul, 2: nobul
+  plotconfusion(truth,pred, name);  % 1: bul, 2: nobul
 end
 end
 

@@ -94,7 +94,7 @@ end
 classErrorStd= std(classError);
 classError= mean(classError);     % Mean of 3 independent 4-fold errors (12 folds total)
 svmModel= cvSvmModel;
-confusMat= confusionMatrix(svmModel, svmClassLabels, params.svm.svmPlotGraphs);
+confusMat= confusionMatrix(svmModel, svmClassLabels, params.svm.svmPlotGraphs, 'SVM');
 
 % Show classification error
 fprintf(' - Classification error: %.1f%%\tstd: %.2f \n', classError, classErrorStd);
@@ -103,6 +103,26 @@ if genparams.verbose>=1
   format bank;
   disp(confusMat);
   format short;
+end
+
+%% Train and evaluate alternate classification model (naive Bayes)
+if params.altModel
+  altModel= fitcnb(svmTrainingSet, svmClassLabels, 'DistributionNames','kernel');
+  for i= 1:3
+    rng(i); cvAltModel= altModel.crossval('kfold',4);
+    altClassError(i)= 100*cvAltModel.kfoldLoss;
+  end
+  % Show alt model error
+  altClassErrorStd= std(altClassError);
+  altClassError= mean(altClassError);
+  altConfusMat= confusionMatrix(cvAltModel, svmClassLabels, params.svm.svmPlotGraphs, 'Naive Bayes');
+  fprintf(' - Naive Bayes error: %.1f%%\tstd: %.2f \n', altClassError, altClassErrorStd);
+  if genparams.verbose>=1
+    fprintf('Naive Bayes confusion matrix:\n');
+    format bank;
+    disp(altConfusMat);
+    format short;
+  end
 end
 
 %% Try each predictor alone

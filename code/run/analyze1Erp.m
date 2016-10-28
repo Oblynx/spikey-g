@@ -34,6 +34,7 @@ parameters.class.svm= struct( ...
 	'singlePredictorPerformance',false, ...    % Assess each predictor independently
 	'singlePredictorPerformThreshold',50 ...  % Show result only if it exceeds this threshold
 );
+parameters.class.altModel= true;
 parameters.gen= struct( ...
   'verbose',1, ...                          % 0= just errors, 1= info, 2= +parameters
   'erpTimeExtension',0, ...                   % Extend ERP time duration by this amount
