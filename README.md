@@ -1,4 +1,4 @@
-# spikey-g: Discovering EEG responses to bullying
+# spikey-g: Characterization of bullying behaviour from EEG data
 
 ## Goal
 
