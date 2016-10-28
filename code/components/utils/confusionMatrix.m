@@ -12,21 +12,21 @@ truth= cellfun(@class2val, truth);
 pred= cellfun(@class2val, pred);
 
 truePred= pred == truth;
-posPred= pred == 1;
-negPred= pred == 0;
+posPred= pred == 1;       % 1: bul
+negPred= pred == 0;       % 0: nobul
 tp= sum(truePred & posPred);
 tn= sum(truePred & negPred);
 fp= sum(~truePred & posPred);
 fn= sum(~truePred & negPred);
 
 setSize= length(pred);
-cfm= round(100.*[tp,fn;fp,tn]./setSize,2);
+cfm= round(100.*[tp,fp;fn,tn]./setSize,2);
 
 if plot
-  truth= [~truth, truth]';
-  pred= [~pred, pred]';
+  truth= [~truth, truth]'; truth= ~truth;
+  pred= [~pred, pred]'; pred= ~pred;
   figure;
-  plotconfusion(truth,pred);
+  plotconfusion(truth,pred);  % 1: bul, 2: nobul
 end
 end
 

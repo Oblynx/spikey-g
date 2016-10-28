@@ -91,12 +91,13 @@ for i=1:3
   classError(i)= 100*cvSvmModel.kfoldLoss;
 end
 %fprintf('Cross Validation time: %.3f\n', toc);
+classErrorStd= std(classError);
 classError= mean(classError);     % Mean of 3 independent 4-fold errors (12 folds total)
 svmModel= cvSvmModel;
 confusMat= confusionMatrix(svmModel, svmClassLabels, params.svm.svmPlotGraphs);
 
 % Show classification error
-fprintf(' - Classification error: %.1f%% \n', classError);
+fprintf(' - Classification error: %.1f%%\tstd: %.2f \n', classError, classErrorStd);
 if genparams.verbose>=1
   fprintf('Confusion matrix:\n');
   format bank;

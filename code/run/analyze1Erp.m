@@ -41,9 +41,9 @@ parameters.gen= struct( ...
 );
 
 genderAnalysis= false;
-extractFeatures= true;
+extractFeatures= false;
 
-timeLimits= [0,800];timeLims_EPN;
+timeLimits= timeLims_EPN;
 channels= channels_EPN;
 
 %% Show parameters?
