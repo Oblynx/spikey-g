@@ -8,8 +8,8 @@ function cfm= confusionMatrix(svm, truth, plot, name)
 % plot: [bool] whether to display the results graphically
 
 pred= svm.kfoldPredict;
-truth= cellfun(@class2val, truth);
-pred= cellfun(@class2val, pred);
+truth= classNames2Bools(truth);
+pred= classNames2Bools(pred);
 
 truePred= pred == truth;
 posPred= pred == 1;       % 1: bul
@@ -27,13 +27,5 @@ if plot
   pred= [~pred, pred]'; pred= ~pred;
   figure;
   plotconfusion(truth,pred, name);  % 1: bul, 2: nobul
-end
-end
-
-function v= class2val(x)
-if strcmp(x,'bul')
-  v= 1;
-else
-  v= 0;
 end
 end
