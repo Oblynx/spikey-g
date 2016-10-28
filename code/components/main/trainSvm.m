@@ -93,8 +93,7 @@ end
 %fprintf('Cross Validation time: %.3f\n', toc);
 classErrorStd= std(classError);
 classError= mean(classError);     % Mean of 3 independent 4-fold errors (12 folds total)
-svmModel= cvSvmModel;
-confusMat= confusionMatrix(svmModel, svmClassLabels, params.svm.svmPlotGraphs, 'SVM');
+confusMat= confusionMatrix(cvSvmModel, svmClassLabels, params.svm.svmPlotGraphs, 'SVM');
 
 % Show classification error
 fprintf(' - Classification error: %.1f%%\tstd: %.2f \n', classError, classErrorStd);
@@ -124,6 +123,12 @@ if params.altModel
     format short;
   end
 end
+
+% ROC curves
+if params.svm.svmPlotGraphs && params.altModel
+  plotROC(svmModel, altModel, svmClassLabels);
+end
+
 
 %% Try each predictor alone
 if params.svm.singlePredictorPerformance
