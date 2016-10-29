@@ -78,12 +78,31 @@ for i=1:5
   %classErrors(i)= 100*cvSvmModel.kfoldLoss;
 end
 classError= mean(classErrors);     % Mean of 3 independent 4-fold errors (12 folds total)
-svmModel= cvSvmModel;
-confusMat= confusionMatrix(svmModel, class, true);
+confusMat= confusionMatrix(cvSvmModel, class, true, 'SVM');
 
 % Show classification error
-fprintf(' - Classification error: %.1f%% \n', classError);
+fprintf(' - SVM error: %.1f%% \n', classError);
 fprintf('Confusion matrix:\n');
 format bank;
 disp(confusMat);
 format short;
+
+
+%% Alt model
+altModel= fitcnb(dset, class, 'DistributionNames','kernel');
+for i= 1:3
+  rng(i); cvAltModel= altModel.crossval('kfold',4);
+  altClassError(i)= 100*cvAltModel.kfoldLoss;
+end
+% Show alt model error
+altClassErrorStd= std(altClassError);
+altClassError= mean(altClassError);
+altConfusMat= confusionMatrix(cvAltModel, class, true, 'Naive Bayes');
+fprintf(' - Naive Bayes error: %.1f%%\tstd: %.2f \n', altClassError, altClassErrorStd);
+fprintf('Naive Bayes confusion matrix:\n');
+format bank;
+disp(altConfusMat);
+format short;
+
+% ROC curves
+plotROC(svmModel, altModel, class);

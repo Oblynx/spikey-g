@@ -41,11 +41,11 @@ parameters.gen= struct( ...
   'features',3*parameters.feature.wave.peaksNum ...  % READ ONLY!
 );
 
-genderAnalysis= false;
-extractFeatures= false;
+genderAnalysis= true;
+extractFeatures= true;
 
-timeLimits= timeLims_EPN;
-channels= channels_EPN;
+timeLimits= timeLims_N170;
+channels= channels_N170;
 
 %% Show parameters?
 if parameters.gen.verbose>=2
