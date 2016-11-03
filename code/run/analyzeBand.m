@@ -3,9 +3,10 @@ clear; close all;
 loadAll('data/eeg_experiment/sorted_band/');
 
 %% Create Dataset
-dsetB= zeros(15*200/6,3);
+dsetB= zeros(15*200,3);
 dsetNB= dsetB;
 
+% Load data
 count= 0;
 datanames= who('ptes*Bul');
 dataN= length(datanames);
@@ -14,7 +15,7 @@ for i=1: dataN
   band= band(:,7:9);  % Select only the data
   t= size(band,1);
   band= (band - repmat(mean(band,1), t,1)) ./ repmat(std(band,0,1), t,1); % normalize
-  band= squeeze(mean(reshape(band,[],6,3),1));           % average for each epoch
+  %band= squeeze(mean(reshape(band,[],6,3),1));           % average for each epoch
   dsetB(count+1: count+size(band,1), :)= band;
   count= count+ size(band,1);
 end
@@ -28,7 +29,7 @@ for i=1: dataN
   band= band(:,7:9);  % Select only the data
   t= size(band,1);
   band= (band - repmat(mean(band,1), t,1)) ./ repmat(std(band,0,1), t,1); % normalize
-  band= squeeze(mean(reshape(band,[],6,3),1));           % average for each epoch
+  %band= squeeze(mean(reshape(band,[],6,3),1));           % average for each epoch
   dsetNB(count+1: count+size(band,1), :)= band;
   count= count+ size(band,1);
 end
@@ -44,7 +45,8 @@ dataToKeep= ~sum(isnan(dset),2);
 dset= dset(dataToKeep,:);
 class= class(dataToKeep);
 
-classCut= 85; % DANGER %
+%classCut= 85; % DANGER %
+classCut= length(dsetB);
 
 clear('dsetB','dsetNB','dataToKeep');
 %% Show data histograms
@@ -63,9 +65,10 @@ scatterhist(dset(:,3),dset(:,1),'Group',class, 'Location','SouthEast',...
   'Direction','out','Color','br','Marker','ox','MarkerSize',5);
 title('Temperature with Heart Rate'); xlabel('temp'); ylabel('hr');
 
-%figure;
-%scatter3(dset(1:classCut,1),dset(1:classCut,2),dset(1:classCut,3),'xr'); hold on;
-%scatter3(dset(classCut+1:end,1),dset(classCut+1:end,2),dset(classCut+1:end,3),'ob'); hold off;
+figure;
+scatter3(dset(1:classCut,1),dset(1:classCut,2),dset(1:classCut,3),'xr'); hold on;
+scatter3(dset(classCut+1:end,1),dset(classCut+1:end,2),dset(classCut+1:end,3),'ob'); hold off;
+xlabel('hr'); ylabel('R'); zlabel('T');
 
 %% Train SVM
 svmModel= fitcsvm(dset, class, 'Standardize',true, ...
