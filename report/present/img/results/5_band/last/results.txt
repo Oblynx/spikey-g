@@ -1,0 +1,14 @@
+ - SVM cv error: 62.7%	std: 1.06 
+ - SVM ho error: 59.7%	std: 1.98 
+ - SVM percent support vectors in dataset: 85.9% 
+Confusion matrix:
+         20.64         33.17
+         29.36         16.83
+
+ - Decision Tree cv error: 40.8%	std: 3.40 
+ - Decision Tree ho error: 45.5%	std: 3.21 
+Decision Tree confusion matrix:
+         24.69         18.43
+         25.31         31.57
+
+ (SVM_AUC, alt_AUC)=(0.00, 0.86)
