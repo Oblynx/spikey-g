@@ -1,4 +1,4 @@
-function plotROC(svmModel, altModel, classLabels)
+function plotROC(svmModel, altModel, classLabels, altName)
 svmModel= svmModel.fitPosterior;
 [~,svmScore]= svmModel.resubPredict;
 [Xsvm,Ysvm,Tsvm,AUCsvm] = perfcurve(classNames2Bools(classLabels), ...
@@ -13,7 +13,7 @@ plot(Xalt,Yalt);
 plot(linspace(Xalt(1),Xalt(end),length(Xalt)), linspace(Yalt(1),Yalt(end),length(Yalt)));
 hold off;
 xlabel('FPR'); ylabel('TPR');
-legend('SVM', 'Naive Bayes', 'Random', 'Location','best');
-title('ROC curves for SVM and naive Bayes');
-fprintf(' (SVM_AUC, nb_AUC)=(%.2f, %.2f)\n', AUCsvm, AUCalt);
+legend('SVM', altName, 'Random', 'Location','best');
+title(['ROC curves for SVM and ',altName]);
+fprintf(' (SVM_AUC, alt_AUC)=(%.2f, %.2f)\n', AUCsvm, AUCalt);
 end

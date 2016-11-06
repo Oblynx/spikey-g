@@ -2,7 +2,7 @@ clear; close all;
 load('data/erp_time_channels.mat');
 
 %% Parameters
-dir= 'data/eeg_experiment/matfilesT1/';                         % Data directory
+dir= 'data/eeg_experiment/matfilesT2/';                         % Data directory
 savefile= 'data/results/features/tmp/svmTrainingSet_tmp.mat';   % Where to save features
 tresultsfile= 'data/results/svm/tmp/trainResults_tmp.mat';      % Where to save SVM results
 
@@ -30,7 +30,8 @@ parameters.class.predictor= struct( ...
 );
 parameters.class.svm= struct( ...
   'kernelFunc','rbf', ...
-  'svmPlotGraphs',true, ...                 % Plot various descriptive graphs
+  'k',4, ...                                % Number of cross-validation folds
+  'svmPlotGraphs',false, ...                 % Plot various descriptive graphs
 	'singlePredictorPerformance',false, ...    % Assess each predictor independently
 	'singlePredictorPerformThreshold',50 ...  % Show result only if it exceeds this threshold
 );
@@ -41,11 +42,11 @@ parameters.gen= struct( ...
   'features',3*parameters.feature.wave.peaksNum ...  % READ ONLY!
 );
 
-genderAnalysis= true;
+genderAnalysis= false;
 extractFeatures= true;
 
-timeLimits= timeLims_N170;
-channels= channels_N170;
+timeLimits= timeLims_EPN;
+channels= channels_EPN;
 
 %% Show parameters?
 if parameters.gen.verbose>=2

@@ -86,17 +86,15 @@ svmModel= trainSvm_ready(svmTrainingSet);
 
 % Calculate classification error
 %tic;
-for i=1:3
-  rng(i); cvSvmModel= svmModel.crossval('kfold',4);
+for i=1:5
+  rng(i); cvSvmModel= svmModel.crossval('kfold',params.svm.k);
   classError(i)= 100*cvSvmModel.kfoldLoss;
 end
 %fprintf('Cross Validation time: %.3f\n', toc);
-classErrorStd= std(classError);
-classError= mean(classError);     % Mean of 3 independent 4-fold errors (12 folds total)
 confusMat= confusionMatrix(cvSvmModel, svmClassLabels, params.svm.svmPlotGraphs, 'SVM');
 
 % Show classification error
-fprintf(' - Classification error: %.1f%%\tstd: %.2f \n', classError, classErrorStd);
+fprintf(' - Classification error: %.1f%%\tstd: %.2f \n', mean(classError), std(classError));
 if genparams.verbose>=1
   fprintf('Confusion matrix:\n');
   format bank;
@@ -107,15 +105,13 @@ end
 %% Train and evaluate alternate classification model (naive Bayes)
 if params.altModel
   altModel= fitcnb(svmTrainingSet, svmClassLabels, 'DistributionNames','kernel');
-  for i= 1:3
-    rng(i); cvAltModel= altModel.crossval('kfold',4);
+  for i= 1:5
+    rng(i); cvAltModel= altModel.crossval('kfold',params.svm.k);
     altClassError(i)= 100*cvAltModel.kfoldLoss;
   end
   % Show alt model error
-  altClassErrorStd= std(altClassError);
-  altClassError= mean(altClassError);
   altConfusMat= confusionMatrix(cvAltModel, svmClassLabels, params.svm.svmPlotGraphs, 'Naive Bayes');
-  fprintf(' - Naive Bayes error: %.1f%%\tstd: %.2f \n', altClassError, altClassErrorStd);
+  fprintf(' - Naive Bayes error: %.1f%%\tstd: %.2f \n', mean(altClassError), std(altClassError));
   if genparams.verbose>=1
     fprintf('Naive Bayes confusion matrix:\n');
     format bank;
@@ -126,9 +122,31 @@ end
 
 % ROC curves
 if params.svm.svmPlotGraphs && params.altModel
-  plotROC(svmModel, altModel, svmClassLabels);
+  plotROC(svmModel, altModel, svmClassLabels, 'Naive Bayes');
 end
 
+%% Train and evaluate Decision Tree classifier
+if params.altModel
+  dtModel= fitctree(svmTrainingSet, svmClassLabels);
+  for i= 1:5
+    rng(i); cvDtModel= dtModel.crossval('kfold',params.svm.k);
+    dtClassError(i)= 100*cvDtModel.kfoldLoss;
+  end
+  % Show alt model error
+  dtConfusMat= confusionMatrix(cvDtModel, svmClassLabels, params.svm.svmPlotGraphs, 'Decision Tree');
+  fprintf(' - Decision Tree error: %.1f%%\tstd: %.2f \n', mean(dtClassError), std(dtClassError));
+  if genparams.verbose>=1
+    fprintf('Decision Tree confusion matrix:\n');
+    format bank;
+    disp(dtConfusMat);
+    format short;
+  end
+end
+
+% ROC curves
+if params.svm.svmPlotGraphs && params.altModel
+  plotROC(svmModel, dtModel, svmClassLabels, 'Decision Tree');
+end
 
 %% Try each predictor alone
 if params.svm.singlePredictorPerformance

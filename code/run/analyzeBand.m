@@ -45,13 +45,12 @@ dataToKeep= ~sum(isnan(dset),2);
 dset= dset(dataToKeep,:);
 class= class(dataToKeep);
 
-%classCut= 85; % DANGER %
 classCut= length(dsetB);
 
 clear('dsetB','dsetNB','dataToKeep');
 %% Show data histograms
 % 1: bpm, 2: R, 3: T
-
+%{
 figure;
 scatterhist(dset(:,1),dset(:,2),'Group',class, 'Location','SouthEast',...
   'Direction','out','Color','br','Marker','ox','MarkerSize',5);
@@ -69,43 +68,65 @@ figure;
 scatter3(dset(1:classCut,1),dset(1:classCut,2),dset(1:classCut,3),'xr'); hold on;
 scatter3(dset(classCut+1:end,1),dset(classCut+1:end,2),dset(classCut+1:end,3),'ob'); hold off;
 xlabel('hr'); ylabel('R'); zlabel('T');
-
+%}
 %% Train SVM
 svmModel= fitcsvm(dset, class, 'Standardize',true, ...
-                  'KernelScale','auto','KernelFunc','rbf');
+                  'KernelScale','auto','KernelFunc','rbf', 'BoxConstraint',1E4);
 cvSvmModel= 0;
-for i=1:5
-  rng(i); cvSvmModel= svmModel.crossval('kfold',4);
-  classErrors(i)= 100*cvSvmModel.kfoldLoss;
-  %rng(i); cvSvmModel= svmModel.crossval('holdout',0.25);
-  %classErrors(i)= 100*cvSvmModel.kfoldLoss;
+for i=1:10
+  rng(i);
+  cvSvmModel= svmModel.crossval('kfold',4);
+  hoSvmModel= svmModel.crossval('Holdout', 0.25);
+  classError(i)= 100*cvSvmModel.kfoldLoss;
+  hoError(i)= 100*hoSvmModel.kfoldLoss;
 end
-classError= mean(classErrors);     % Mean of 3 independent 4-fold errors (12 folds total)
 confusMat= confusionMatrix(cvSvmModel, class, true, 'SVM');
 
 % Show classification error
-fprintf(' - SVM error: %.1f%% \n', classError);
+fprintf(' - SVM cv error: %.1f%%\tstd: %.2f \n', mean(classError), std(classError));
+fprintf(' - SVM ho error: %.1f%%\tstd: %.2f \n', mean(hoError), std(hoError));
+fprintf(' - SVM support vectors: %d \n', sum(svmModel.IsSupportVector));
 fprintf('Confusion matrix:\n');
 format bank;
 disp(confusMat);
 format short;
 
 
-%% Alt model
+%% Naive Bayes model
+%{
 altModel= fitcnb(dset, class, 'DistributionNames','kernel');
-for i= 1:3
+for i= 1:5
   rng(i); cvAltModel= altModel.crossval('kfold',4);
   altClassError(i)= 100*cvAltModel.kfoldLoss;
 end
 % Show alt model error
-altClassErrorStd= std(altClassError);
-altClassError= mean(altClassError);
 altConfusMat= confusionMatrix(cvAltModel, class, true, 'Naive Bayes');
-fprintf(' - Naive Bayes error: %.1f%%\tstd: %.2f \n', altClassError, altClassErrorStd);
+fprintf(' - Naive Bayes error: %.1f%%\tstd: %.2f \n', mean(altClassError), std(altClassError));
 fprintf('Naive Bayes confusion matrix:\n');
 format bank;
 disp(altConfusMat);
 format short;
 
 % ROC curves
-plotROC(svmModel, altModel, class);
+plotROC(svmModel, altModel, class, 'Naive Bayes');
+%}
+%% Decision Tree model
+dtModel= fitctree(dset, class, 'MaxNumSplits', 60);
+for i= 1:10
+  rng(i);
+  cvDtModel= dtModel.crossval('kfold',4);
+  hoDtModel= dtModel.crossval('Holdout', 0.25);
+  dtClassError(i)= 100*cvDtModel.kfoldLoss;
+  hoDtError(i)= 100*hoDtModel.kfoldLoss;
+end
+% Show alt model error
+dtConfusMat= confusionMatrix(cvDtModel, class, true, 'Decision Tree');
+fprintf(' - Decision Tree cv error: %.1f%%\tstd: %.2f \n', mean(dtClassError), std(dtClassError));
+fprintf(' - Decision Tree ho error: %.1f%%\tstd: %.2f \n', mean(hoDtError), std(hoDtError));
+fprintf('Decision Tree confusion matrix:\n');
+format bank;
+disp(dtConfusMat);
+format short;
+
+% ROC curves
+plotROC(svmModel, dtModel, class, 'Decision Tree');
